@@ -87,7 +87,6 @@ void wait_for_period(struct rt_task* tp);
 // Check if thread is in execution after deadline and return 1, otherwise 0.
 uint32_t deadline_miss(struct rt_task* tp);
 
-// Simply print formatted the number of dmiss of each thread
-void deadline_handle(struct rt_task* tp, uint32_t n_of_thread);
+int task_cmp_deadline(struct rt_task* tp1, struct rt_task* tp2);
 
 #endif

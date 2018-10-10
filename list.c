@@ -58,6 +58,16 @@ int list_is_empty(struct list* l) {
 }
 
 /**
+ * Check the size of the list
+ * 
+ * [IN] struct list*: pointer to list
+ * [OUT] int: 1 if empty, 0 otherwise
+ */
+int list_get_size(struct list* l) {
+    return l->n;
+}
+
+/**
  * Add the provided info str to the list
  * 
  * [IN] struct list*: pointer to list
@@ -75,6 +85,33 @@ void list_add_top(struct list* l, void* elem) {
 }
 
 /**
+ * Add in a sorted way the element
+ * 
+ * [IN] struct list*: pointer to list
+ * [IN] char*: str to be added to the list
+ * [OUT] void
+ */
+void list_add_sorted(struct list* l, void* elem, int (* cmpfun)(void* elem1, void* elem2)) {
+    struct node* seek;
+    struct node* new;
+
+    if(list_is_empty(l)) {
+        list_add_top(l, elem);
+        return;
+    }
+
+    new = alloc(1, sizeof(struct node));
+    new->elem = elem;
+
+    for(seek = l->root; seek != NULL; seek = seek->next)
+        if(sortfun(elem, seek->elem) > 0)
+            break;
+
+    new->next = seek->next;
+    seek->next = new;
+}
+
+/**
  * Remove the top element of the list
  * 
  * [IN] struct list*: pointer to list
@@ -83,7 +120,7 @@ void list_add_top(struct list* l, void* elem) {
 void list_remove_top(struct list* l) {
     struct node* n;
 
-    if(taskset_is_empty(l))
+    if(list_is_empty(l))
         return;
     
     n = l->root;

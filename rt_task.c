@@ -211,17 +211,11 @@ uint32_t deadline_miss(struct rt_task* tp) {
 	return 0;
 }
 
-// ---
-// Simply print formatted the number of dmiss of each thread
-// task_par* tp: pointer to Vector[n_of_thread] of tp data structure
-// return: int - 1 if thread has executed after deadline, 0 otherwise
-// ---
-void deadline_handle(struct rt_task* tp, int n_of_thread) {
-	int 	i;	// array indexes [0-n_of_thread]
-
-	printf("-----------------------------------------------\n");
-	printf("MISSED DEADLINE NUMBER:\n");
-	for(i = 0; i < n_of_thread; i++)
-		printf("\tThread num: %d - dmiss: %d\n", i, tp[i].dmiss);
-	printf("-----------------------------------------------\n");
+int task_cmp_deadline(struct rt_task* tp1, struct rt_task* tp2) {
+	if(tp1->deadline > tp2->deadline)
+		return 1;
+	else if(tp1->deadline > tp2->deadline)
+		return -1;
+	else
+		return 0;
 }

@@ -66,6 +66,14 @@ void list_init(struct list* l);
 int list_is_empty(struct list* l);
 
 /**
+ * Check the size of the list
+ * 
+ * [IN] struct list*: pointer to list
+ * [OUT] int: 1 if empty, 0 otherwise
+ */
+int list_get_size(struct list* l);
+
+/**
  * Add the provided info str to the list
  * 
  * [IN] struct list*: pointer to list
@@ -73,6 +81,15 @@ int list_is_empty(struct list* l);
  * [OUT] void
  */
 void list_add_top(struct list* l, void* elem);
+
+/**
+ * Add in a sorted way the element
+ * 
+ * [IN] struct list*: pointer to list
+ * [IN] char*: str to be added to the list
+ * [OUT] void
+ */
+void list_add_sorted(struct list* l, void* elem, int (* cmpfun)(void* elem1, void* elem2));
 
 /**
  * Remove the top element of the list

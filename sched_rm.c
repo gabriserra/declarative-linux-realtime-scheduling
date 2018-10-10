@@ -1,6 +1,8 @@
 
 #include "sched_rm.h"
 #include "rt_taskset.h"
+#include "rt_task.h"
+#include "list.h"
 
 /* SCHED_RM
 SE D = T
@@ -29,11 +31,15 @@ Con * mi servono metodi nel padre
 //----------------------------------------------------------
 
 unsigned int workload_analysis(struct rt_taskset* ts) {
-	unsigned int i, testing_set[MAX_TESTING_SET_SIZE], is_schedulable = 0;
 	int n_testing_set, j;
+	struct list points;
+	unsigned int i, is_schedulable;
 
-	for(i = 0; i < ts->size; i++) {
+	list_init(&points);
+
+	for(i = 0; i < taskset_get_size(ts); i++) {
 		is_schedulable = 0;
+		n		
 		if((n_testing_set = testing_set_fp(ts, testing_set, i)) > 0) {
 			for (j = 0; j < n_testing_set; j++)
 				if (workload_function(ts, i, testing_set[j]) <= testing_set[j])
@@ -47,14 +53,15 @@ unsigned int workload_analysis(struct rt_taskset* ts) {
 }
 
 // Calculate testing set points BB04
-int testing_set_fp(struct rt_taskset* ts, unsigned int *points, unsigned int i) {
-	uint32_t tj_period, ti_deadline;
+int testing_set_fp(struct rt_taskset* ts, struct list* points, unsigned int i) {
+	unsigned int tj_period, ti_deadline;
 	unsigned int j, k, index, already_present, n_points = 0;
 
-	if (i >= ts->n)
+	if (i >= taskset_get_size(ts))
 		return -1;
 
 	ti_deadline = taskset_get_i_task(ts, i)->deadline;
+	list_add_top(points, (void*) &ti_deadline)
 	points[n_points++] = ti_deadline;
 	
 	for (j = 0; j < i; j++) {
@@ -62,8 +69,6 @@ int testing_set_fp(struct rt_taskset* ts, unsigned int *points, unsigned int i) 
 		tj_period = taskset_get_i_task(ts, j)->period;
 		
 		while (k * tj_period < ti_deadline) {
-			if (n_points == MAX_TESTING_SET_SIZE) 
-				return n_points;
 			
 			already_present = 0;
 			for(index = 0; index < n_points; index++)

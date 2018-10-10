@@ -32,24 +32,12 @@
 #ifndef RT_TASKSET_H
 #define RT_TASKSET_H
 
+#include "list.h"
 #include "rt_task.h"
 
-/**
- * STRUCT NODE
- * Represent each node of the list
- */
-struct node {
-    struct node*    next;   // contains the next node in list
-    struct rt_task* task;   // contains a task and its parameter
-};
-
-/**
- * STRUCT RT_TASKSET
- * Represent the list object
- */
 struct rt_taskset {
-    int             n;      // contains the number of element in the list
-    struct node*    tasks;  // contains the root of the list
+    struct list tasks;
+    // add something more?
 };
 
 /**
@@ -68,6 +56,14 @@ void taskset_init(struct rt_taskset* ts);
 int taskset_is_empty(struct rt_taskset* ts);
 
 /**
+ * Check the size of the list
+ * 
+ * [IN] struct list*: pointer to list
+ * [OUT] int: 1 if empty, 0 otherwise
+ */
+int taskset_get_size(struct rt_taskset* ts);
+
+/**
  * Add the provided info str to the list
  * 
  * [IN] struct list*: pointer to list
@@ -75,6 +71,15 @@ int taskset_is_empty(struct rt_taskset* ts);
  * [OUT] void
  */
 void taskset_add_top(struct rt_taskset* ts, struct rt_task* task);
+
+/**
+ * Add in a sorted way the element
+ * 
+ * [IN] struct list*: pointer to list
+ * [IN] char*: str to be added to the list
+ * [OUT] void
+ */
+void taskset_add_sorted_dl(struct rt_taskset* ts, struct rt_task* task);
 
 /**
  * Remove the top element of the list
