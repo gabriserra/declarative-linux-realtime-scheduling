@@ -66,6 +66,91 @@ static void* alloc(int count, size_t dimension) {
 	exit(-1);
 }
 
+/**
+ * @internal
+ * 
+ * Split the nodes of the given list into front and back halves,
+ * and return the two lists using the reference parameters. 
+ * If the length is odd, the extra node should go in the front list. 
+ * Uses the fast/slow pointer strategy.
+ * 
+ * @endinternal
+ */
+static void split(struct node_int* l, struct node_int** l1_ptr, struct node_int** l2_ptr) {
+    struct node_int* fast; 
+    struct node_int* slow; 
+    
+    slow = l; 
+    fast = l->next; 
+  
+    while (fast != NULL) { 
+        fast = fast->next; 
+        
+        if (fast != NULL) { 
+            slow = slow->next; 
+            fast = fast->next; 
+        } 
+    } 
+  
+    *l1_ptr = l; 
+    *l2_ptr = slow->next;
+    slow->next = NULL;     
+}
+
+/**
+ * @internal
+ *
+ * The function merge two node l1 and l2 and return the
+ * pointer to a new node list that contains the two nodes merged
+ * Note that the function is recursive!
+ * 
+ * @endinternal
+ */
+static struct node_int* merge(struct node_int* l1, struct node_int* l2, int (* cmpfun)(int elem1, int elem2)) {
+    struct node_int* res; 
+  
+    if (l1 == NULL) 
+        return l1; 
+    else if (l2 == NULL) 
+        return l2; 
+  
+    if(cmpfun(l1->elem, l2->elem) < 0) {
+        res = l1; 
+        res->next = merge(l1->next, l2, cmpfun); 
+    } else { 
+        res = l2; 
+        res->next = merge(l1, l2->next, cmpfun); 
+    } 
+    
+    return res; 
+}
+
+/**
+ * @internal
+ *
+ * The function recursively split the list in two, sort each
+ * of the two halves and merge it.
+ * 
+ * @endinternal
+ */
+static void merge_sort(struct node_int** l_ptr, int (* cmpfun)(int elem1, int elem2)) {
+    struct node_int* l;
+    struct node_int* l1; 
+    struct node_int* l2;
+
+    l = *l_ptr;     
+    
+    if ((l == NULL) || (l->next == NULL)) 
+        return;
+    
+    split(l, &l1, &l2);
+    
+    merge_sort(&l1, cmpfun); 
+    merge_sort(&l2, cmpfun); 
+    
+    *l_ptr = merge(l1, l2, cmpfun); 
+}
+
 // -----------------------------------------------------
 // PUBLIC METHOD
 // -----------------------------------------------------
@@ -117,7 +202,7 @@ int list_int_get_size(struct list_int* l) {
  * 
  * @endinternal
  */
-void list_int_add_top(struct list_int* l, int elem) {
+void list_int_int_add_top(struct list_int* l, int elem) {
     struct node_int* new = alloc(1, sizeof(struct node_int));
 
     new->next = l->root;
@@ -144,8 +229,8 @@ void list_int_add_sorted(struct list_int* l, int elem, int (* cmpfun)(int elem, 
     struct node_int* prec;
     struct node_int* new;
 
-    if(list_is_empty(l) || cmpfun(elem, l->root->elem) < 0) {
-        list_add_top(l, elem);
+    if(list_int_is_empty(l) || cmpfun(elem, l->root->elem) < 0) {
+        list_int_add_top(l, elem);
         return;
     }
 
@@ -174,7 +259,7 @@ void list_int_add_sorted(struct list_int* l, int elem, int (* cmpfun)(int elem, 
 void list_int_remove_top(struct list_int* l) {
     struct node_int* n;
 
-    if(list_is_empty(l))
+    if(list_int_is_empty(l))
         return;
     
     n = l->root;
@@ -193,7 +278,7 @@ void list_int_remove_top(struct list_int* l) {
  * @endinternal
  */
 int* list_int_get_top_elem(struct list_int* l) {
-    if(list_is_empty(l))
+    if(list_int_is_empty(l))
         return NULL;
     
     return &(l->root->elem);
@@ -211,7 +296,7 @@ int* list_int_get_i_elem(struct list_int* l, unsigned int i) {
     int j;
     struct node_int* n;
 
-    if(list_get_size(l) < i + 1)
+    if(list_int_get_size(l) < i + 1)
         return NULL;
 
     n = l->root;
@@ -239,6 +324,44 @@ int* list_int_search_elem(struct list_int* l, int elem) {
             return &(n->elem);
 
     return NULL;
+}
+
+/**
+ * @internal
+ * 
+ * Seek the list, remove all nodes and frees memory
+ * 
+ * @endinternal
+ */
+void list_int_remove_all(struct list_int* l) {
+    struct node_int* n;
+    struct node_int* p;
+
+    if(list_int_is_empty(l))
+        return;
+
+    for(n = l->root; n != NULL; n = n->next) {
+        p = n;
+        n = n->next;
+        free(p);
+    }
+
+    list_int_init(l);
+}
+
+/**
+ * @internal
+ * 
+ * Utilizes an in-place merge sort technique
+ * to sort the entire list. The cmpfun pointer function must be a function
+ * that return a value greater than 1 is elem1 is greater than elem2,
+ * -1 in the opposite case and 0 if elem1 and elem2 are equal. Use
+ * cmp_asc or cmp_dsc if you don't want nothing special.
+ * 
+ * @endinternal
+ */
+void list_int_sort(struct list_int* l, int (* cmpfun)(int elem1, int elem2)) {
+    merge_sort(&(l->root), cmpfun);
 }
 
 // ---------------------------------------------

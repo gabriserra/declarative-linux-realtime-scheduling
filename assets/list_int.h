@@ -86,7 +86,6 @@ int list_int_get_size(struct list_int* l);
  * 
  * @param l pointer to list to be used
  * @param elem integer element to be added to the list
- * @return void
  */
 void list_int_add_top(struct list_int* l, int elem);
 
@@ -134,6 +133,7 @@ int* list_int_get_top_elem(struct list_int* l);
  * greater or equal to the list size, the function returns NULL.
  * 
  * @param l pointer to list to be used
+ * @param i the index of the elem to be retrivied
  * @return pointer to the element contained in the i-th node of the list
  */
 int* list_int_get_i_elem(struct list_int* l, unsigned int i);
@@ -146,9 +146,34 @@ int* list_int_get_i_elem(struct list_int* l, unsigned int i);
  * NULL 
  * 
  * @param l pointer to list to be used
+ * @param elem the elem that will be searched for
  * @return pointer to the first element equal to "elem" or NULL if not found
  */
 int* list_int_search_elem(struct list_int* l, int elem);
+
+/**
+ * @brief Remove all elements inside the list and frees memory
+ * 
+ * Seek the list, remove all nodes and frees memory
+ * 
+ * @param l pointer to list to be used
+ */
+void list_int_remove_all(struct list_int* l);
+
+/**
+ * @brief Sort (in place) the list
+ * 
+ * Utilizes an in-place merge sort technique
+ * to sort the entire list. The cmpfun pointer function must be a function
+ * that return a value greater than 1 is elem1 is greater than elem2,
+ * -1 in the opposite case and 0 if elem1 and elem2 are equal. Use
+ * cmp_asc or cmp_dsc if you don't want nothing special.
+ * 
+ * 
+ * @param l pointer to list to be used
+ * @param cmpfun pointer to the function that will be used to compare elements
+ */
+void list_int_sort(struct list_int* l, int (* cmpfun)(int elem1, int elem2));
 
 // ---------------------------------------------
 // UTILITY

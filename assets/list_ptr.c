@@ -37,6 +37,91 @@ static void* alloc(int count, size_t dimension) {
 	exit(-1);
 }
 
+/**
+ * @internal
+ * 
+ * Split the nodes of the given list into front and back halves,
+ * and return the two lists using the reference parameters. 
+ * If the length is odd, the extra node should go in the front list. 
+ * Uses the fast/slow pointer strategy.
+ * 
+ * @endinternal
+ */
+static void split(struct node_ptr* l, struct node_ptr** l1_ptr, struct node_ptr** l2_ptr) {
+    struct node_ptr* fast; 
+    struct node_ptr* slow; 
+    
+    slow = l; 
+    fast = l->next; 
+  
+    while (fast != NULL) { 
+        fast = fast->next; 
+        
+        if (fast != NULL) { 
+            slow = slow->next; 
+            fast = fast->next; 
+        } 
+    } 
+  
+    *l1_ptr = l; 
+    *l2_ptr = slow->next;
+    slow->next = NULL;     
+}
+
+/**
+ * @internal
+ *
+ * The function merge two node l1 and l2 and return the
+ * pointer to a new node list that contains the two nodes merged
+ * Note that the function is recursive!
+ * 
+ * @endinternal
+ */
+static struct node_ptr* merge(struct node_ptr* l1, struct node_ptr* l2, int (* cmpfun)(void* elem1, void* elem2)) {
+    struct node_ptr* res; 
+  
+    if (l1 == NULL) 
+        return l1; 
+    else if (l2 == NULL) 
+        return l2; 
+  
+    if(cmpfun(l1->elem, l2->elem) < 0) {
+        res = l1; 
+        res->next = merge(l1->next, l2, cmpfun); 
+    } else { 
+        res = l2; 
+        res->next = merge(l1, l2->next, cmpfun); 
+    } 
+    
+    return res; 
+}
+
+/**
+ * @internal
+ *
+ * The function recursively split the list in two, sort each
+ * of the two halves and merge it.
+ * 
+ * @endinternal
+ */
+static void merge_sort(struct node_ptr** l_ptr, int (* cmpfun)(void* elem1, void* elem2)) {
+    struct node_ptr* l;
+    struct node_ptr* l1; 
+    struct node_ptr* l2;
+
+    l = *l_ptr;     
+    
+    if ((l == NULL) || (l->next == NULL)) 
+        return;
+    
+    split(l, &l1, &l2);
+    
+    merge_sort(&l1, cmpfun); 
+    merge_sort(&l2, cmpfun); 
+    
+    *l_ptr = merge(l1, l2, cmpfun); 
+}
+
 // -----------------------------------------------------
 // PUBLIC METHOD
 // -----------------------------------------------------
@@ -50,7 +135,7 @@ static void* alloc(int count, size_t dimension) {
  * 
  * @endinternal
  */
-void list_init(struct list_ptr* l) {
+void list_ptr_init(struct list_ptr* l) {
     l->n = 0;
     l->root = NULL;
 }
@@ -63,7 +148,7 @@ void list_init(struct list_ptr* l) {
  * 
  * @endinternal
  */
-int list_is_empty(struct list_ptr* l) {
+int list_ptr_is_empty(struct list_ptr* l) {
     if(!l->n)
         return 1;
     return 0;
@@ -77,7 +162,7 @@ int list_is_empty(struct list_ptr* l) {
  * 
  * @endinternal
  */
-int list_get_size(struct list_ptr* l) {
+int list_ptr_get_size(struct list_ptr* l) {
     return l->n;
 }
 
@@ -88,7 +173,7 @@ int list_get_size(struct list_ptr* l) {
  * 
  * @endinternal
  */
-void list_add_top(struct list_ptr* l, void* elem) {
+void list_ptr_add_top(struct list_ptr* l, void* elem) {
     struct node_ptr* n = alloc(1, sizeof(struct node_ptr));
 
     n->next = l->root;
@@ -109,13 +194,13 @@ void list_add_top(struct list_ptr* l, void* elem) {
  * 
  * @endinternal
  */
-void list_add_sorted(struct list_ptr* l, void* elem, int (* cmpfun)(void* elem1, void* elem2)) {
+void list_ptr_add_sorted(struct list_ptr* l, void* elem, int (* cmpfun)(void* elem1, void* elem2)) {
     struct node_ptr* seek;
     struct node_ptr* prec;
     struct node_ptr* new;
 
-    if(list_is_empty(l) || cmpfun(elem, l->root->elem) < 0) {
-        list_add_top(l, elem);
+    if(list_ptr_is_empty(l) || cmpfun(elem, l->root->elem) < 0) {
+        list_ptr_add_top(l, elem);
         return;
     }
 
@@ -141,10 +226,10 @@ void list_add_sorted(struct list_ptr* l, void* elem, int (* cmpfun)(void* elem1,
  *  
  * @endinternal
  */
-void list_remove_top(struct list_ptr* l) {
+void list_ptr_remove_top(struct list_ptr* l) {
     struct node_ptr* n;
 
-    if(list_is_empty(l))
+    if(list_ptr_is_empty(l))
         return;
     
     n = l->root;
@@ -162,8 +247,8 @@ void list_remove_top(struct list_ptr* l) {
  *  
  * @endinternal
  */
-void* list_get_top_elem(struct list_ptr* l) {
-    if(list_is_empty(l))
+void* list_ptr_get_top_elem(struct list_ptr* l) {
+    if(list_ptr_is_empty(l))
         return NULL;
 
     return l->root->elem;
@@ -177,11 +262,11 @@ void* list_get_top_elem(struct list_ptr* l) {
  * 
  * @endinternal
  */
-void* list_get_i_elem(struct list_ptr* l, unsigned int i) {
+void* list_ptr_get_i_elem(struct list_ptr* l, unsigned int i) {
     int j;
     struct node_ptr* n;
 
-    if(list_get_size(l) < i + 1)
+    if(list_ptr_get_size(l) < i + 1)
         return NULL;
     
     n = l->root;
@@ -201,7 +286,7 @@ void* list_get_i_elem(struct list_ptr* l, unsigned int i) {
  * 
  * @endinternal
  */
-void* list_search_elem(struct list_ptr* l, void* elem, int (* cmpfun)(void* elem1, void* elem2)) {
+void* list_ptr_search_elem(struct list_ptr* l, void* elem, int (* cmpfun)(void* elem1, void* elem2)) {
     struct node_ptr* n;
 
     for(n = l->root; n != NULL; n = n->next)
@@ -209,4 +294,18 @@ void* list_search_elem(struct list_ptr* l, void* elem, int (* cmpfun)(void* elem
             return n->elem;
 
     return NULL;
+}
+
+/**
+ * @internal
+ * 
+ * Utilizes an in-place merge sort technique
+ * to sort the entire list. The cmpfun pointer function must be a function
+ * that return a value greater than 1 is elem1 is greater than elem2,
+ * -1 in the opposite case and 0 if elem1 and elem2 are equal.
+ * 
+ * @endinternal
+ */
+void list_ptr_sort(struct list_ptr* l, int (* cmpfun)(void* elem1, void* elem2)) {
+    merge_sort(&(l->root), cmpfun);
 }
