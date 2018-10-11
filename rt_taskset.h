@@ -32,7 +32,7 @@
 #ifndef RT_TASKSET_H
 #define RT_TASKSET_H
 
-#include "list.h"
+#include "assets/list_ptr.h"
 #include "rt_task.h"
 
 struct rt_taskset {

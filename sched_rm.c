@@ -61,28 +61,18 @@ int testing_set_fp(struct rt_taskset* ts, struct list* points, unsigned int i) {
 		return -1;
 
 	ti_deadline = taskset_get_i_task(ts, i)->deadline;
-	list_add_top(points, (void*) &ti_deadline)
-	points[n_points++] = ti_deadline;
+	list_add_top(points, (void*) &ti_deadline);
 	
 	for (j = 0; j < i; j++) {
 		k = 1;
 		tj_period = taskset_get_i_task(ts, j)->period;
 		
 		while (k * tj_period < ti_deadline) {
-			
-			already_present = 0;
-			for(index = 0; index < n_points; index++)
-				if(points[index] == k * ts->tasks[j].T)
-					already_present = 1;
-				
-			if(!already_present)	
-				points[n_points++] =  k * ts->tasks[j].T;
-			
+			if(list_search_elem(points, k * tj_period) == NULL)
+				list_add_sorted(points, k * tj_period);
 			k++;
 		}
 	}
 
-	bubble_sort(points, n_points);
-
-	return n_points;
+	return list_get_size(points);
 }

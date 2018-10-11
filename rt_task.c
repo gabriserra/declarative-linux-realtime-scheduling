@@ -1,5 +1,6 @@
 #include "rt_task.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <sched.h>
 #include <time.h>
 #include <string.h>
@@ -63,11 +64,6 @@ static int time_cmp(struct timespec t1, struct timespec t2) {
 
 // Instanciate and initialize a real time task structure
 int rt_task_init(struct rt_task *tp, pid_t tid, clockid_t clk) {
-	tp = calloc(1, sizeof(struct rt_task));
-	
-	if (tp == NULL)
-		return 0;
-
 	tp->tid = tid;
 	tp->clk = clk;
 	return 1;
@@ -214,7 +210,7 @@ uint32_t deadline_miss(struct rt_task* tp) {
 int task_cmp_deadline(struct rt_task* tp1, struct rt_task* tp2) {
 	if(tp1->deadline > tp2->deadline)
 		return 1;
-	else if(tp1->deadline > tp2->deadline)
+	else if(tp1->deadline < tp2->deadline)
 		return -1;
 	else
 		return 0;
