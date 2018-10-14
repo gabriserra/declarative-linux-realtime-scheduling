@@ -13,7 +13,7 @@
 #ifndef RT_TASKSET_H
 #define RT_TASKSET_H
 
-#include "../assets/list_ptr.h"
+#include "../components/list_ptr.h"
 #include "rt_task.h"
 
 // ---------------------------------------------
@@ -124,6 +124,30 @@ struct rt_task* taskset_get_top_task(struct rt_taskset* ts);
 struct rt_task* taskset_get_i_task(struct rt_taskset* ts, unsigned int i);
 
 /**
+ * @brief Return the pointer to the i-th node of taskset list
+ * 
+ * Return the pointer to i-th node of the list. The list is 0-based. 
+ * If "i" is greater or equal to the list size, the function returns NULL.
+ * 
+ * @param ts pointer to list to be used
+ * @param i the index of the node to be retrivied
+ * @return pointer to the i-th node of the list
+ */
+struct node_ptr* taskset_get_i_node(struct rt_taskset* ts, unsigned int i);
+
+/**
+ * @brief Return the pointer to the node adjacent in the taskset list
+ * 
+ * Return the pointer to the node adjacent in the taskset. The caller
+ * must ensure that node passed to the function is inside the list.
+ * 
+ * @param ts pointer to list to be used
+ * @param node the index of the node that will be used to get the adjacent
+ * @return pointer to the adjacent node of the one passed
+ */
+struct node_ptr* taskset_get_next_node(struct rt_taskset* ts, struct node_ptr* node);
+
+/**
  * @brief Sort (in place) the taskset
  * 
  * Utilizes an in-place merge sort technique to sort the entire taskset.
@@ -137,6 +161,6 @@ struct rt_task* taskset_get_i_task(struct rt_taskset* ts, unsigned int i);
  * @param p parameter of task to be used to establish the order
  * @param flag specify ASC for ascendent or DSC for descendent
  */
-void taskset_ptr_sort(struct rt_taskset* ts, enum PARAM p, int flag);
+void taskset_sort(struct rt_taskset* ts, enum PARAM p, int flag);
 
 #endif

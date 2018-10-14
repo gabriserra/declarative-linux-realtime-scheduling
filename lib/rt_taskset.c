@@ -19,9 +19,31 @@
  * 
  * @endinternal
  */
-static int taskset_cmp(void* task1, void* task2) {
-    return task_cmp_deadline((struct rt_task*) task1, (struct rt_task*) task2);
+static int taskset_cmp_deadline_asc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, DEADLINE, ASC);
 }
+static int taskset_cmp_deadline_dsc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, DEADLINE, DSC);
+}
+static int taskset_cmp_priority_asc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PRIORITY, ASC);
+}
+static int taskset_cmp_priority_dsc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PRIORITY, DSC);
+}
+static int taskset_cmp_period_asc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PERIOD, ASC);
+}
+static int taskset_cmp_period_dsc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PERIOD, DSC);
+}
+static int taskset_cmp_wcet_asc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, WCET, ASC);
+}
+static int taskset_cmp_wcet_dsc(void* task1, void* task2) {
+    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, WCET, DSC);
+}
+
 
 // -----------------------------------------------------
 // PUBLIC METHOD
@@ -86,7 +108,7 @@ void taskset_add_top(struct rt_taskset* ts, struct rt_task* task) {
  * @endinternal
  */
 void taskset_add_sorted_dl(struct rt_taskset* ts, struct rt_task* task) {
-    list_ptr_add_sorted(&(ts->tasks), (void*) task, taskset_cmp_deadline);
+    list_ptr_add_sorted(&(ts->tasks), (void*) task, taskset_cmp_deadline_asc);
 }
 
 /**
@@ -127,6 +149,30 @@ struct rt_task* taskset_get_i_task(struct rt_taskset* ts, unsigned int i) {
 
 /**
  * @internal
+ * 
+ * Return the pointer to i-th node of the list. The list is 0-based. 
+ * If "i" is greater or equal to the list size, the function returns NULL.
+ * 
+ * @endinternal
+ */
+struct node_ptr* taskset_get_i_node(struct rt_taskset* ts, unsigned int i) {
+    return list_ptr_get_i_node(&(ts->tasks), i);
+}
+
+/**
+ * @internal
+ * 
+ * Return the pointer to the node adjacent in the taskset. The caller
+ * must ensure that node passed to the function is inside the list.
+ * 
+ * @endinternal
+ */
+struct node_ptr* taskset_get_next_node(struct rt_taskset* ts, struct node_ptr* node) {
+    list_ptr_get_next_node(&(ts->tasks), node);
+}
+
+/**
+ * @internal
  *
  * The function ensures that the taskset is in a consistent
  * state before to be used.
@@ -151,8 +197,31 @@ void* taskset_search_elem(struct rt_taskset* ts, struct rt_task* task) {
  * 
  * @endinternal
  */
-void taskset_ptr_sort(struct rt_taskset* ts, enum PARAM p, int flag) {
-
+void taskset_sort(struct rt_taskset* ts, enum PARAM p, int flag) {
+    switch (p) {
+        case PERIOD:
+            if(flag == ASC)
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_period_asc);
+            else
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_period_dsc);
+        case DEADLINE:
+            if(flag == ASC)
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_deadline_asc);
+            else
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_deadline_dsc);
+        case PRIORITY:
+            if(flag == ASC)
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_priority_asc);
+            else
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_priority_dsc);
+        case WCET:
+            if(flag == ASC)
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_wcet_asc);
+            else
+                return list_ptr_sort(&(ts->tasks), taskset_cmp_wcet_dsc);
+        default:
+            break;
+    }
 }
 
 #include <stdio.h>

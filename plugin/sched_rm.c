@@ -24,11 +24,54 @@ Con * mi servono metodi nel padre
 * testa se schedulabile (con tolleranza)
     - testa se schedulabile nec
     - testa se schedulabile suff
+* schedula?
 */
+
+void sched_rm_calc_priority(struct rt_taskset* ts) {
+	struct node_ptr* n;
+	struct rt_task* t;
+	unsigned int last_priority;
+
+	taskset_sort(ts, PERIOD, DSC);
+	n = taskset_get_i_node(ts, 0);
+	t = (struct rt_task*) n->elem;
+	last_priority = 1;
+
+	while (n != NULL) {
+		t->priority = last_priority;
+		n = taskset_get_next_node(ts, n);
+		t = (struct rt_task*) n->elem;
+		last_priority++;
+	}
+} 
 
 //----------------------------------------------------------
 // WORKLOAD ANALYSIS: perform the sched. analysis under fp
 //----------------------------------------------------------
+
+unsigned int hyperbolic_bound(struct rt_taskset* ts) {
+	float res;
+	unsigned int i;
+	struct node_ptr* n;
+	struct rt_task* t;
+
+	n = taskset_get_i_node(ts, 0);
+	t = (struct rt_task*) n->elem;
+	res = (t->wcet / t->period) + 1;
+
+	for(i = 1; i < taskset_get_size(ts); i++) {
+		n = taskset_get_next_node(ts, n);
+		t = (struct rt_task*) n->elem;
+		res *= (t->wcet / t->period) + 1;
+	}
+
+	if(res > 2)
+		return 0;
+	
+	return 1;
+}
+
+// da riscrivere con accesso lineare!!!!!!!
 
 unsigned int workload_analysis(struct rt_taskset* ts) {
 	struct list_int points;

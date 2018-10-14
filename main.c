@@ -1,3 +1,5 @@
+#include "rts_lib.h"
+
 void RT_task(void) {
     /* parameters for reserving CPU */
     rts_params p;
