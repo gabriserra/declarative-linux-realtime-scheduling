@@ -35,34 +35,11 @@ int main(void) {
 
     printf("Start del demone.\n");
     // check plugin disponibili
-    fifo_create();
+    
 
     while(1) {
         
         
         sleep(1);
     }
-}
-
-void fifo_create() {
-    int ret;
-
-    ret = mkfifo("file", 0666);
-
-    if(ret < 0) {
-        printf("Unable to create communication channel. Terminate.");
-        return;
-    }
-}
-
-void fifo_read_b(int fd) {
-    // Open FIFO for Read only 
-    fd = open(myfifo, O_RDONLY); 
-  
-    // Read from FIFO 
-    read(fd, arr1, sizeof(arr1)); 
-  
-    // Print the read message 
-    printf("User2: %s\n", arr1); 
-    close(fd); 
 }
