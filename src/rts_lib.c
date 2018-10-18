@@ -1,35 +1,26 @@
-
-#define _GNU_SOURCE
 #include "lib/rts_channel.h"
-#include <stdint.h>
-#include <time.h>
-#include <fcntl.h>
-#include <unistd.h>
 
-#define RTS_CAP_BUDGET 1
-#define RTS_CAP_REMAINING_BUDGET 2
-#define RTS_GUARANTEED 3
+void rts_daemon_connect(struct rts_channel_c* cc) {
+    rts_channel_c_init(cc);
+}
 
-typedef uint32_t rsv_id;
+float rts_cap_query_budget(struct rts_channel_c* c) {
+    struct rts_request req;
+    struct rts_reply rep;
 
-struct rts_params {
-    clockid_t 		clk;
-    uint32_t		budget;		// worst case ex time [microseconds]
-	uint32_t 		period;		// period of task [millisecond]
-	uint32_t 		deadline;	// relative deadline [millisecond]
-	uint32_t 		priority;	// priority of task [LOW_PRIO, HIGH_PRIO]
-};
+    req.req_type = RTS_CAP_QUERY;
+    req.payload.query_type = RTS_BUDGET;
+    rts_channel_c_send(c, &req);
+    rts_channel_c_recv(c, &rep);
 
-float rts_cap_query(int msg_type) {
-    struct rts_msg_req req;
-    struct rts_msg_rep rep;
-
-    rts_req_set_message(&req, msg_type);
-    rts_send_message(&req, &rep);
-
-    // fare qualcosa con la risposta
+    if(rep.rep_type == RTS_CAP_QUERY_INVALID)
+        return -1;
     
-    return rep.response; 
+    return rep.payload; 
+}
+
+float rts_cap_query_remaining_budget(struct rts_channel_c* c) {
+
 }
 
 void rts_params_init(struct rt_task *tp) {

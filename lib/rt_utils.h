@@ -1,0 +1,1 @@
+float read_rt_kernel_budget();

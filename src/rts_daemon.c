@@ -3,8 +3,8 @@
 /*
 
 start del demone
-check plugin disponibili?
-creo file mknode fifo
+creo server AF_UNIX
+check plugin disponibili? -> dentro scheduler
 
 loop attendo (sul file? o aspetto signal?)
 
@@ -27,19 +27,51 @@ leggo max fattore utilizzazione su proc
 
 */
 
-#include "assets/channel.h"
+// TODO -> sostituire tutte le printf con syslog
+
+#include "lib/rt_taskset.h"
+#include "lib/rts_channel.h"
 #include <stdlib.h>
+#include <stdio.h>
 
+#define PROC_RT_PERIOD_FILE "/proc/sys/kernel/sched_rt_period_us"
+#define PROC_RT_RUNTIME_FILE "/proc/sys/kernel/sched_rt_runtime_us"
 
-int main(void) {
+struct rts_deamon {
+    struct rts_channel chann;
+    struct rts_scheduler sched;
+    struct rts_taskset tasks;
+    struct rts_request reqs;
+    struct rts_reply reps;
+} data;
 
-    printf("Start del demone.\n");
-    // check plugin disponibili
+int main(int argc, char* argv[]) {
+    printf("rtsdaemond - Daemon started.\n");
     
+    signal(SIGINT, daemon_term);
+    daemon_init();
+    daemon_loop();
+}
 
+void daemon_init() {
+    channel_init_server(&(data->chann));
+    taskset_init(&(data->tasks));
+    scheduler_init(&(data->sched), read_rt_kernel_budget());
+    request_init(&(data->reqs));
+}
+
+void daemon_loop() {
     while(1) {
-        
-        
-        sleep(1);
+        channel_check_new_conn(&(data->chann));
+
+        //for 1 to size
+            channel_receive_req(&(data->chann), &(data->reqs), i);
+            //daemon_handle_req(&(data->reqs), &(data->reps));
+            channel_send_rep(&(data->chann), &(data->reps), i);
     }
 }
+
+void daemon_term() {
+    printf("Killed..\n");
+}
+

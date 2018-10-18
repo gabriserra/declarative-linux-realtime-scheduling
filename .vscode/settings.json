@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "*.vhd": "vhdl",
+        "*.sdf": "xml",
+        "unix_socket.h": "c",
+        "stdio.h": "c",
+        "rt_taskset.h": "c",
+        "rts_channel.h": "c"
+    }
+}
