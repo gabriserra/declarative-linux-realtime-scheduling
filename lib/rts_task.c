@@ -1,10 +1,11 @@
-#include "rt_task.h"
+#include "rts_task.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <sched.h>
-#include <time.h>
 #include <string.h>
 #include <assert.h>
+
+#define _GNU_SOURCE
 
 //---------------------------------
 // PRIVATE: TIME UTILITY FUNCTIONS
@@ -63,25 +64,25 @@ static int time_cmp(struct timespec t1, struct timespec t2) {
 //------------------------------------------
 
 // Instanciate and initialize a real time task structure
-int rt_task_init(struct rt_task *tp, pid_t tid, clockid_t clk) {
+int rts_task_init(struct rts_task *tp, pid_t tid, clockid_t clk) {
 	tp->tid = tid;
 	tp->clk = clk;
 	return 1;
 }
 
 // Instanciate and initialize a real time task structure from another one
-int rt_task_copy(struct rt_task *tp, struct rt_task *tp_copy) {
-	tp = calloc(1, sizeof(struct rt_task));
+int rts_task_copy(struct rts_task *tp, struct rts_task *tp_copy) {
+	tp = calloc(1, sizeof(struct rts_task));
 	
 	if (tp == NULL)
 		return 0;
 
-	memcpy(tp, tp_copy, sizeof(struct rt_task));
+	memcpy(tp, tp_copy, sizeof(struct rts_task));
 	return 1;
 }
 
 // Destroy a real time task structure
-void rt_task_destroy(struct rt_task *tp) {
+void rts_task_destroy(struct rts_task *tp) {
 	free(tp);
 }
 
@@ -90,32 +91,32 @@ void rt_task_destroy(struct rt_task *tp) {
 //------------------------------------------------
 
 // Set the task worst case execution time
-void set_wcet(struct rt_task* tp, uint64_t wcet) {
+void set_wcet(struct rts_task* tp, uint64_t wcet) {
 	tp->wcet = wcet;
 }
 
 // Get the task worst case execution time
-uint64_t get_wcet(struct rt_task* tp) {
+uint64_t get_wcet(struct rts_task* tp) {
 	return tp->wcet;
 }
 
 // Set the task period
-void set_period(struct rt_task* tp, uint32_t period) {
+void set_period(struct rts_task* tp, uint32_t period) {
 	tp->period = period;
 }
 
 // Get the task period
-uint32_t get_period(struct rt_task* tp) {
+uint32_t get_period(struct rts_task* tp) {
 	return tp->period;
 }
 
 // Set the relative deadline
-void set_deadline(struct rt_task* tp, uint32_t deadline) {
+void set_deadline(struct rts_task* tp, uint32_t deadline) {
 	tp->deadline = deadline;
 }
 
 // Get the relative deadline
-uint32_t get_deadline(struct rt_task* tp) {
+uint32_t get_deadline(struct rts_task* tp) {
 	return tp->deadline;
 }
 
@@ -126,7 +127,7 @@ uint32_t get_deadline(struct rt_task* tp) {
 // int priority: desidered priority of the thread [1 low - 99 high]
 // return: void
 // ---
-void set_priority(struct rt_task* tp, uint32_t priority) {
+void set_priority(struct rts_task* tp, uint32_t priority) {
 	if(priority < LOW_PRIO)
 		tp->priority = LOW_PRIO;
 	else if(priority > HIGH_PRIO)
@@ -136,22 +137,22 @@ void set_priority(struct rt_task* tp, uint32_t priority) {
 }
 
 // Get the priority
-uint32_t get_priority(struct rt_task* tp) {
+uint32_t get_priority(struct rts_task* tp) {
 	return tp->priority;
 }
 
 // Get the deadline miss number
-uint32_t get_dmiss(struct rt_task* tp) {
+uint32_t get_dmiss(struct rts_task* tp) {
 	return tp->dmiss;
 }
 
 // Get activation time (struct timespec)
-void get_activation_time(struct rt_task* tp, struct timespec* at) {
+void get_activation_time(struct rts_task* tp, struct timespec* at) {
 	time_copy(at, tp->at);
 }
 
 // Get absolute deadline (struct timespec)
-void get_deadline_abs(struct rt_task* tp, struct timespec* dl) {
+void get_deadline_abs(struct rts_task* tp, struct timespec* dl) {
 	time_copy(dl, tp->dl);
 }
 
@@ -164,7 +165,7 @@ void get_deadline_abs(struct rt_task* tp, struct timespec* dl) {
 // task_par* tp: pointer to tp data structure of the thread
 // return: void
 // ---
-void calc_abs_value(struct rt_task* tp) {
+void calc_abs_value(struct rts_task* tp) {
 	struct timespec t;
 	
 	// get current clock value
@@ -182,7 +183,7 @@ void calc_abs_value(struct rt_task* tp) {
 // task_par* tp: pointer to tp data structure of the thread
 // return: void
 // ---
-void wait_for_period(struct rt_task* tp) {
+void wait_for_period(struct rts_task* tp) {
 	clock_nanosleep(tp->clk, TIMER_ABSTIME, &(tp->at), NULL);
 	time_add_ms(&(tp->at), tp->period);
 	time_add_ms(&(tp->dl), tp->period);
@@ -193,7 +194,7 @@ void wait_for_period(struct rt_task* tp) {
 // task_par* tp: pointer to tp data structure of the thread
 // return: uint32_t - 1 if thread has executed after deadline, 0 otherwise
 // ---
-uint32_t deadline_miss(struct rt_task* tp) {
+uint32_t deadline_miss(struct rts_task* tp) {
 	struct timespec now;
 	
 	// get the clock time and compare to abs deadline
@@ -207,7 +208,7 @@ uint32_t deadline_miss(struct rt_task* tp) {
 	return 0;
 }
 
-int task_cmp_deadline(struct rt_task* tp1, struct rt_task* tp2) {
+int task_cmp_deadline(struct rts_task* tp1, struct rts_task* tp2) {
 	if(tp1->deadline > tp2->deadline)
 		return 1;
 	else if(tp1->deadline < tp2->deadline)
@@ -216,7 +217,7 @@ int task_cmp_deadline(struct rt_task* tp1, struct rt_task* tp2) {
 		return 0;
 }
 
-int task_cmp_period(struct rt_task* tp1, struct rt_task* tp2) {
+int task_cmp_period(struct rts_task* tp1, struct rts_task* tp2) {
 	if(tp1->period > tp2->period)
 		return 1;
 	else if(tp1->period < tp2->period)
@@ -225,7 +226,7 @@ int task_cmp_period(struct rt_task* tp1, struct rt_task* tp2) {
 		return 0;
 }
 
-int task_cmp_wcet(struct rt_task* tp1, struct rt_task* tp2) {
+int task_cmp_wcet(struct rts_task* tp1, struct rts_task* tp2) {
 	if(tp1->wcet > tp2->wcet)
 		return 1;
 	else if(tp1->wcet < tp2->wcet)
@@ -234,7 +235,7 @@ int task_cmp_wcet(struct rt_task* tp1, struct rt_task* tp2) {
 		return 0;
 }
 
-int task_cmp_priority(struct rt_task* tp1, struct rt_task* tp2) {
+int task_cmp_priority(struct rts_task* tp1, struct rts_task* tp2) {
 	if(tp1->priority > tp2->priority)
 		return 1;
 	else if(tp1->priority < tp2->priority)
@@ -243,7 +244,7 @@ int task_cmp_priority(struct rt_task* tp1, struct rt_task* tp2) {
 		return 0;
 }
 
-int task_cmp(struct rt_task* tp1, struct rt_task* tp2, enum PARAM p, int flag) {
+int task_cmp(struct rts_task* tp1, struct rts_task* tp2, enum PARAM p, int flag) {
 	
 	if(flag != ASC && flag != DSC)
 		flag = ASC;

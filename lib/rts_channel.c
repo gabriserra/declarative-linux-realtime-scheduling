@@ -1,12 +1,24 @@
 #include "rts_channel.h"
 
-void rts_channel_c_init(struct rts_channel_c* cc) {
-    memset(cc, 0, sizeof(struct rts_channel_c));
-    unix_socket_init(&(cc->sock));
+int rts_channel_init(struct rts_channel* cc) {
+    memset(cc, 0, sizeof(struct rts_channel));
+    return unix_socket_init(&(cc->sock));
 }
 
-void rts_channel_d_init(struct rts_channel_d* cd) {
-    memset(cd, 0, sizeof(struct rts_channel_d));
+int rts_channel_connect(struct rts_channel* cc) {
+    return unix_socket_connect(&(cc->sock));
+}
+
+void rts_channel_recv(struct rts_channel* cc, struct rts_reply* rep) {
+    unix_socket_receive(&(cc->sock), (void *)rep, sizeof(struct rts_reply));
+}
+
+void rts_channel_send(struct rts_channel* cc, struct rts_request* req) {
+    unix_socket_send(&(cc->sock), (void *)req, sizeof(struct rts_request));
+}
+
+void rts_channel_d_init(struct rts_channel* cd) {
+    memset(cd, 0, sizeof(struct rts_channel));
 
     if(unix_socket_init(&(cd->sock), TCP) < 0) 
 		return -1;
@@ -20,26 +32,18 @@ void rts_channel_d_init(struct rts_channel_d* cd) {
     return 0;
 }
 
-void rts_channel_d_newconn(struct rts_channel_d* cd) {
+void rts_channel_d_newconn(struct rts_channel* cd) {
     unix_socket_check_connection(&(cd->sock));
 }
 
-int rts_channel_d_getconn(struct rts_channel_d* cd) {
+int rts_channel_d_getconn(struct rts_channel* cd) {
     return unix_socket_get_size(&(cd->sock));
 }
 
-void rts_channel_d_recv(struct rts_channel_d* cd, struct rts_request* req, int i) {
+void rts_channel_d_recv(struct rts_channel* cd, struct rts_request* req, int i) {
     unix_socket_receive(&(cd->sock), i, (void *)req, sizeof(struct rts_request));
 }
 
-void rts_channel_d_send(struct rts_channel_d* cd, struct rts_reply* rep, int i) {
+void rts_channel_d_send(struct rts_channel* cd, struct rts_reply* rep, int i) {
     unix_socket_send(&(cd->sock), i, (void *)rep, sizeof(struct rts_reply));
-}
-
-void rts_channel_c_recv(struct rts_channel_c* cc, struct rts_reply* rep) {
-    unix_socket_receive(&(cc->sock), (void *)rep, sizeof(struct rts_reply));
-}
-
-void rts_channel_c_send(struct rts_channel_c* cc, struct rts_request* req) {
-    unix_socket_send(&(cc->sock), (void *)req, sizeof(struct rts_request));
 }

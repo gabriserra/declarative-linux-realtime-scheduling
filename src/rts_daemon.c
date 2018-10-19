@@ -29,20 +29,16 @@ leggo max fattore utilizzazione su proc
 
 // TODO -> sostituire tutte le printf con syslog
 
-#include "lib/rt_taskset.h"
+#include "lib/rts_taskset.h"
 #include "lib/rts_channel.h"
+#include "lib/rts_scheduler.h"
 #include <stdlib.h>
 #include <stdio.h>
-
-#define PROC_RT_PERIOD_FILE "/proc/sys/kernel/sched_rt_period_us"
-#define PROC_RT_RUNTIME_FILE "/proc/sys/kernel/sched_rt_runtime_us"
 
 struct rts_deamon {
     struct rts_channel chann;
     struct rts_scheduler sched;
     struct rts_taskset tasks;
-    struct rts_request reqs;
-    struct rts_reply reps;
 } data;
 
 int main(int argc, char* argv[]) {
@@ -54,20 +50,24 @@ int main(int argc, char* argv[]) {
 }
 
 void daemon_init() {
-    channel_init_server(&(data->chann));
-    taskset_init(&(data->tasks));
-    scheduler_init(&(data->sched), read_rt_kernel_budget());
-    request_init(&(data->reqs));
+    rts_channel_d_init(&(data.chann));
+    rts_taskset_init(&(data.tasks));
+    rts_scheduler_init(&(data.sched), read_rt_kernel_budget());
 }
 
 void daemon_loop() {
-    while(1) {
-        channel_check_new_conn(&(data->chann));
+    int i;
+    struct rts_request req;
+    struct rts_reply rep;
 
-        //for 1 to size
-            channel_receive_req(&(data->chann), &(data->reqs), i);
+    while(1) {
+        channel_check_new_conn(&(data.chann));
+
+        for(i = 0; i < channel_d_get_size(); i++) {
+            channel_receive_req(&(data.chann), &req, i);
             //daemon_handle_req(&(data->reqs), &(data->reps));
-            channel_send_rep(&(data->chann), &(data->reps), i);
+            channel_send_rep(&(data.chann), &rep, i);
+        }
     }
 }
 

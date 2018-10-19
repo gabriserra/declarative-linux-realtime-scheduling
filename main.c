@@ -1,4 +1,23 @@
-#include "rts_lib.h"
+#include "src/rts_lib.h"
+#include <pthread.h>
+
+int main(int argc, char* argv[]) {
+    /* thread descriptor */
+    pthread_t tid;
+
+    /* spawn thread */
+    pthread_create(&tid, NULL, RT_task, NULL);
+
+    /* wait spawned thread */
+    pthread_join(tid, NULL);
+
+    exit(EXIT_SUCCESS);
+}
+
+void exit_err(char* strerr) {
+    printf("FATAL: %s\n", strerr);
+    exit(EXIT_FAILURE);
+}
 
 void RT_task(void) {
     /* parameters for reserving CPU */
@@ -6,6 +25,12 @@ void RT_task(void) {
 
     /* identifier of the reservation, if accepted */
     rts_rsv rsv_id;
+
+    /* two way channel towards daemon */
+    rts_channel c;
+
+    if(rts_daemon_connect(c) != RTS_CONNECTED)
+        exit_err("")
 
     if(!rts_cap_query(RTS_CAP_BUDGET))
         exit_err("Notion of budget unsupported!");

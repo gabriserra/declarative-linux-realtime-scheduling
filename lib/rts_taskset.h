@@ -1,5 +1,5 @@
 /**
- * @file rt_taskset.h
+ * @file rts_taskset.h
  * @author Gabriele Serra
  * @date 11 Oct 2018
  * @brief Contains the interface of a taskset (linked list of real time task) 
@@ -10,11 +10,11 @@
  * an implementation of linked list of void* element.
  */
 
-#ifndef RT_TASKSET_H
-#define RT_TASKSET_H
+#ifndef RTS_TASKSET_H
+#define RTS_TASKSET_H
 
 #include "../components/list_ptr.h"
-#include "rt_task.h"
+#include "rts_task.h"
 
 // ---------------------------------------------
 // DATA STRUCTURES
@@ -23,10 +23,10 @@
 /**
  * @brief Represent the taskset object
  * 
- * The structure rt_taskset contains a list_ptr. Inside
+ * The structure rts_taskset contains a list_ptr. Inside
  * the taskset will be placed rt_tasks.
  */
-struct rt_taskset {
+struct rts_taskset {
     struct list_ptr tasks; /** the rt_task list  */
 };
 
@@ -42,7 +42,7 @@ struct rt_taskset {
  * 
  * @param ts pointer to the taskset to be initialized
  */
-void taskset_init(struct rt_taskset* ts);
+void rts_taskset_init(struct rts_taskset* ts);
 
 /**
  * @brief Check if the taskset is empty
@@ -53,7 +53,7 @@ void taskset_init(struct rt_taskset* ts);
  * @param ts pointer to taskset to be used to be used
  * @return 1 if empty, 0 otherwise
  */
-int taskset_is_empty(struct rt_taskset* ts);
+int rts_taskset_is_empty(struct rts_taskset* ts);
 
 /**
  * @brief Return the size of the taskset
@@ -64,7 +64,7 @@ int taskset_is_empty(struct rt_taskset* ts);
  * @param ts pointer to taskset to be used to be used
  * @return the size of the taskset or 0 if empty
  */
-int taskset_get_size(struct rt_taskset* ts);
+int rts_taskset_get_size(struct rts_taskset* ts);
 
 /**
  * @brief Add the provided element to the top of the taskset
@@ -74,7 +74,7 @@ int taskset_get_size(struct rt_taskset* ts);
  * @param ts pointer to taskset to be used
  * @param task pointer to the task to be added to the taskset
  */
-void taskset_add_top(struct rt_taskset* ts, struct rt_task* task);
+void rts_taskset_add_top(struct rts_taskset* ts, struct rts_task* task);
 
 /**
  * @brief Add the element to the taskset sorting by ASC deadline
@@ -88,7 +88,7 @@ void taskset_add_top(struct rt_taskset* ts, struct rt_task* task);
  * @param ts pointer to taskset to be used
  * @param task pointer to the task to be added to the taskset
  */
-void taskset_add_sorted_dl(struct rt_taskset* ts, struct rt_task* task);
+void rts_taskset_add_sorted_dl(struct rts_taskset* ts, struct rts_task* task);
 
 /**
  * @brief Remove the top element of the taskset
@@ -98,7 +98,7 @@ void taskset_add_sorted_dl(struct rt_taskset* ts, struct rt_task* task);
  * 
  * @param ts: pointer to taskset to be used
  */
-void taskset_remove_top(struct rt_taskset* ts);
+void rts_taskset_remove_top(struct rts_taskset* ts);
 
 /**
  * @brief Return a pointer to the first task of the list
@@ -109,7 +109,7 @@ void taskset_remove_top(struct rt_taskset* ts);
  * @param ts pointer to taskset to be used
  * @return pointer to the first task of the list
  */
-struct rt_task* taskset_get_top_task(struct rt_taskset* ts);
+struct rts_task* rts_taskset_get_top_task(struct rts_taskset* ts);
 
 /**
  * @brief Return the pointer to the i-th task in the taskset
@@ -121,7 +121,7 @@ struct rt_task* taskset_get_top_task(struct rt_taskset* ts);
  * @param i the index of the task to be retrivied
  * @return pointer to the element contained in the i-th node of the taskset
  */
-struct rt_task* taskset_get_i_task(struct rt_taskset* ts, unsigned int i);
+struct rts_task* rts_taskset_get_i_task(struct rts_taskset* ts, unsigned int i);
 
 /**
  * @brief Return the pointer to the i-th node of taskset list
@@ -133,7 +133,7 @@ struct rt_task* taskset_get_i_task(struct rt_taskset* ts, unsigned int i);
  * @param i the index of the node to be retrivied
  * @return pointer to the i-th node of the list
  */
-struct node_ptr* taskset_get_i_node(struct rt_taskset* ts, unsigned int i);
+struct node_ptr* rts_taskset_get_i_node(struct rts_taskset* ts, unsigned int i);
 
 /**
  * @brief Return the pointer to the node adjacent in the taskset list
@@ -145,7 +145,7 @@ struct node_ptr* taskset_get_i_node(struct rt_taskset* ts, unsigned int i);
  * @param node the index of the node that will be used to get the adjacent
  * @return pointer to the adjacent node of the one passed
  */
-struct node_ptr* taskset_get_next_node(struct rt_taskset* ts, struct node_ptr* node);
+struct node_ptr* rts_taskset_get_next_node(struct rts_taskset* ts, struct node_ptr* node);
 
 /**
  * @brief Sort (in place) the taskset
@@ -161,6 +161,6 @@ struct node_ptr* taskset_get_next_node(struct rt_taskset* ts, struct node_ptr* n
  * @param p parameter of task to be used to establish the order
  * @param flag specify ASC for ascendent or DSC for descendent
  */
-void taskset_sort(struct rt_taskset* ts, enum PARAM p, int flag);
+void rts_taskset_sort(struct rts_taskset* ts, enum PARAM p, int flag);
 
 #endif

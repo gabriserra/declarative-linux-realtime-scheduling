@@ -1,7 +1,11 @@
+#include "rts_utils.h"
+#include <stdlib.h>
+#include <stdio.h>
+
 float read_rt_kernel_budget() {
     int rt_period, rt_runtime;
     FILE* proc_rt_period = fopen(PROC_RT_PERIOD_FILE, "r");
-    FILE* proc_rt_runtime fopen(PROC_RT_RUNTIME_FILE, "r");
+    FILE* proc_rt_runtime = fopen(PROC_RT_RUNTIME_FILE, "r");
 
     if(proc_rt_period == NULL || proc_rt_runtime == NULL) {
         printf("Error during proc file open ...\n");

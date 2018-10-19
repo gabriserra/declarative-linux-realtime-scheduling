@@ -1,12 +1,12 @@
 /**
- * @file rt_taskset.c
+ * @file rts_taskset.c
  * @author Gabriele Serra
  * @date 11 Oct 2018
  * @brief Contains the implementation of a taskset (linked list of real time task) 
  *
  */
 
-#include "rt_taskset.h"
+#include "rts_taskset.h"
 
 // -----------------------------------------------------
 // PRIVATE METHOD
@@ -19,29 +19,29 @@
  * 
  * @endinternal
  */
-static int taskset_cmp_deadline_asc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, DEADLINE, ASC);
+static int rts_taskset_cmp_deadline_asc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, DEADLINE, ASC);
 }
-static int taskset_cmp_deadline_dsc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, DEADLINE, DSC);
+static int rts_taskset_cmp_deadline_dsc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, DEADLINE, DSC);
 }
-static int taskset_cmp_priority_asc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PRIORITY, ASC);
+static int rts_taskset_cmp_priority_asc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, PRIORITY, ASC);
 }
-static int taskset_cmp_priority_dsc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PRIORITY, DSC);
+static int rts_taskset_cmp_priority_dsc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, PRIORITY, DSC);
 }
-static int taskset_cmp_period_asc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PERIOD, ASC);
+static int rts_taskset_cmp_period_asc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, PERIOD, ASC);
 }
-static int taskset_cmp_period_dsc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, PERIOD, DSC);
+static int rts_taskset_cmp_period_dsc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, PERIOD, DSC);
 }
-static int taskset_cmp_wcet_asc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, WCET, ASC);
+static int rts_taskset_cmp_wcet_asc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, WCET, ASC);
 }
-static int taskset_cmp_wcet_dsc(void* task1, void* task2) {
-    return task_cmp((struct rt_task*) task1, (struct rt_task*) task2, WCET, DSC);
+static int rts_taskset_cmp_wcet_dsc(void* task1, void* task2) {
+    return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, WCET, DSC);
 }
 
 
@@ -57,7 +57,7 @@ static int taskset_cmp_wcet_dsc(void* task1, void* task2) {
  * 
  * @endinternal
  */
-void taskset_init(struct rt_taskset* ts) {
+void rts_taskset_init(struct rts_taskset* ts) {
     list_ptr_init(&(ts->tasks));
 }
 
@@ -69,7 +69,7 @@ void taskset_init(struct rt_taskset* ts) {
  * 
  * @endinternal
  */
-int taskset_is_empty(struct rt_taskset* ts) {
+int rts_taskset_is_empty(struct rts_taskset* ts) {
     return list_ptr_is_empty(&(ts->tasks));
 }
 
@@ -81,7 +81,7 @@ int taskset_is_empty(struct rt_taskset* ts) {
  * 
  * @endinternal
  */
-int taskset_get_size(struct rt_taskset* ts) {
+int rts_taskset_get_size(struct rts_taskset* ts) {
     return list_ptr_get_size(&(ts->tasks));
 }
 
@@ -92,7 +92,7 @@ int taskset_get_size(struct rt_taskset* ts) {
  * 
  * @endinternal
  */
-void taskset_add_top(struct rt_taskset* ts, struct rt_task* task) {
+void rts_taskset_add_top(struct rts_taskset* ts, struct rts_task* task) {
     list_ptr_add_top(&(ts->tasks), (void*) task);
 }
 
@@ -107,8 +107,8 @@ void taskset_add_top(struct rt_taskset* ts, struct rt_task* task) {
  * 
  * @endinternal
  */
-void taskset_add_sorted_dl(struct rt_taskset* ts, struct rt_task* task) {
-    list_ptr_add_sorted(&(ts->tasks), (void*) task, taskset_cmp_deadline_asc);
+void rts_taskset_add_sorted_dl(struct rts_taskset* ts, struct rts_task* task) {
+    list_ptr_add_sorted(&(ts->tasks), (void*) task, rts_taskset_cmp_deadline_asc);
 }
 
 /**
@@ -119,7 +119,7 @@ void taskset_add_sorted_dl(struct rt_taskset* ts, struct rt_task* task) {
  * 
  * @endinternal
  */
-void taskset_remove_top(struct rt_taskset* ts) {
+void rts_taskset_remove_top(struct rts_taskset* ts) {
     list_ptr_remove_top(&(ts->tasks));
 }
 
@@ -131,7 +131,7 @@ void taskset_remove_top(struct rt_taskset* ts) {
  * 
  * @endinternal
  */
-struct rt_task* taskset_get_top_task(struct rt_taskset* ts) {
+struct rts_task* rts_taskset_get_top_task(struct rts_taskset* ts) {
     return list_ptr_get_top_elem(&(ts->tasks));
 }
 
@@ -143,7 +143,7 @@ struct rt_task* taskset_get_top_task(struct rt_taskset* ts) {
  * 
  * @endinternal
  */
-struct rt_task* taskset_get_i_task(struct rt_taskset* ts, unsigned int i) {
+struct rts_task* rts_taskset_get_i_task(struct rts_taskset* ts, unsigned int i) {
     return list_ptr_get_i_elem(&(ts->tasks), i);
 }
 
@@ -155,7 +155,7 @@ struct rt_task* taskset_get_i_task(struct rt_taskset* ts, unsigned int i) {
  * 
  * @endinternal
  */
-struct node_ptr* taskset_get_i_node(struct rt_taskset* ts, unsigned int i) {
+struct node_ptr* rts_taskset_get_i_node(struct rts_taskset* ts, unsigned int i) {
     return list_ptr_get_i_node(&(ts->tasks), i);
 }
 
@@ -167,7 +167,7 @@ struct node_ptr* taskset_get_i_node(struct rt_taskset* ts, unsigned int i) {
  * 
  * @endinternal
  */
-struct node_ptr* taskset_get_next_node(struct rt_taskset* ts, struct node_ptr* node) {
+struct node_ptr* rts_taskset_get_next_node(struct rts_taskset* ts, struct node_ptr* node) {
     list_ptr_get_next_node(&(ts->tasks), node);
 }
 
@@ -197,32 +197,34 @@ void* taskset_search_elem(struct rt_taskset* ts, struct rt_task* task) {
  * 
  * @endinternal
  */
-void taskset_sort(struct rt_taskset* ts, enum PARAM p, int flag) {
+void rts_taskset_sort(struct rts_taskset* ts, enum PARAM p, int flag) {
     switch (p) {
         case PERIOD:
             if(flag == ASC)
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_period_asc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_period_asc);
             else
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_period_dsc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_period_dsc);
         case DEADLINE:
             if(flag == ASC)
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_deadline_asc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_deadline_asc);
             else
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_deadline_dsc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_deadline_dsc);
         case PRIORITY:
             if(flag == ASC)
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_priority_asc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_priority_asc);
             else
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_priority_dsc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_priority_dsc);
         case WCET:
             if(flag == ASC)
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_wcet_asc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_wcet_asc);
             else
-                return list_ptr_sort(&(ts->tasks), taskset_cmp_wcet_dsc);
+                return list_ptr_sort(&(ts->tasks), rts_taskset_cmp_wcet_dsc);
         default:
             break;
     }
 }
+
+/*
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -238,7 +240,6 @@ void print_list(struct list_ptr* l) {
 
     printf("\n");
 }
-
 
 int main() {
     struct rt_taskset ts;
@@ -271,3 +272,5 @@ int main() {
 
     return 0;
 }
+
+*/

@@ -2,8 +2,15 @@
 #include <time.h>
 #include <sys/types.h>
 
-#define RTS_NOT_GUARANTEED 0
-#define RTS_GUARANTEED 1
+#define RTS_OK 0
+#define RTS_ERROR -1
+
+#define RTS_GUARANTEED 0
+#define RTS_NOT_GUARANTEED -1
+
+#define RTS_CONNECTED 0
+#define RTS_SOCK_ISSUE -1
+#define RTS_DAEMON_UNREACHBLE -2
 
 typedef uint32_t rsv_t;
 
