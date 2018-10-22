@@ -29,11 +29,13 @@ leggo max fattore utilizzazione su proc
 
 // TODO -> sostituire tutte le printf con syslog
 
-#include "lib/rts_taskset.h"
-#include "lib/rts_channel.h"
-#include "lib/rts_scheduler.h"
+#include "../lib/rts_taskset.h"
+#include "../lib/rts_channel.h"
+#include "../lib/rts_scheduler.h"
+#include "../lib/rts_utils.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <signal.h>
 
 struct rts_deamon {
     struct rts_channel chann;
@@ -41,12 +43,8 @@ struct rts_deamon {
     struct rts_taskset tasks;
 } data;
 
-int main(int argc, char* argv[]) {
-    printf("rtsdaemond - Daemon started.\n");
-    
-    signal(SIGINT, daemon_term);
-    daemon_init();
-    daemon_loop();
+void daemon_term() {
+    printf("Killed..\n");
 }
 
 void daemon_init() {
@@ -61,17 +59,32 @@ void daemon_loop() {
     struct rts_reply rep;
 
     while(1) {
-        channel_check_new_conn(&(data.chann));
 
-        for(i = 0; i < channel_d_get_size(); i++) {
-            channel_receive_req(&(data.chann), &req, i);
-            //daemon_handle_req(&(data->reqs), &(data->reps));
-            channel_send_rep(&(data.chann), &rep, i);
+        if(rts_channel_d_select(&(data.chann)) < 0)
+            exit(EXIT_FAILURE);
+
+        for(i = 0; i < rts_channel_d_get_size(&(data.chann)); i++) {
+            if(rts_channel_d_has_data(&(data.chann), i))
+                if(rts_channel_d_new_conn(&(data.chann))) // miss i
+                    rts_channel_d_add_conn(&(data.chann), i);
+                else
+                    // receive and reply
         }
+
     }
+
+    return;
 }
 
-void daemon_term() {
-    printf("Killed..\n");
+int main(int argc, char* argv[]) {
+    printf("rtsdaemond - Daemon started.\n");
+    
+    signal(SIGINT, daemon_term);
+    daemon_init();
+    daemon_loop();
 }
+
+
+
+
 

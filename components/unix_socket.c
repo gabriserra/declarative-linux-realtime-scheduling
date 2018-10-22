@@ -13,7 +13,7 @@ const int REUSE_ADDR = ENABLED;
     Argument: int sock_type
     Return: int */
 
-static int unix_socket_init(struct unix_socket* us, int sock_type) {
+int unix_socket_init(struct unix_socket* us, int sock_type) {
     int sock;
 
     memset(us, 0, sizeof(struct unix_socket));
@@ -29,7 +29,7 @@ static int unix_socket_init(struct unix_socket* us, int sock_type) {
 /** Force a server to use port as port number and addr as ip address and return 0 in case of success or -1 otherwise
     Argument: int sock, char* addr, ushort port
     Return: int */
-static int unix_socket_bind(struct unix_socket* us, char* filepath) {
+int unix_socket_bind(struct unix_socket* us, char* filepath) {
     struct sockaddr_un server_sockaddr;
 
     memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
@@ -43,7 +43,7 @@ static int unix_socket_bind(struct unix_socket* us, char* filepath) {
 /** Put server awaiting for connection on binded address/port and return 0 in case of success or -1 otherwise
     Argument: int sock, int max_req
     Return: int */
-static int unix_socket_listen(struct unix_socket* us, int max_req) {
+int unix_socket_listen(struct unix_socket* us, int max_req) {
     if(!max_req)
         max_req = BACKLOG_MAX;
     
@@ -54,12 +54,32 @@ static int unix_socket_listen(struct unix_socket* us, int max_req) {
     in case of success or -1 otherwise
     Argument: int sock, sockaddr_in* client
     Return: int */
-static int unix_socket_accept(struct unix_socket* us, struct sockaddr_un* client) {
+int unix_socket_accept(struct unix_socket* us, struct sockaddr_un* client) {
     socklen_t struct_len = sizeof(struct sockaddr_un);
     return accept(us->socket, (struct sockaddr*)client, &struct_len);
 }
 
-static int s_getpeername(struct unix_socket* us, struct sockaddr_un* client) {
+int unix_socket_connect(struct unix_socket* us, char* filepath) {
+    struct sockaddr_un server_sockaddr;
+
+    memset(&server_sockaddr, 0, sizeof(struct sockaddr_un));
+	server_sockaddr.sun_family = AF_UNIX;
+    strcpy(server_sockaddr.sun_path, filepath);
+    return connect(us->socket, (struct sockaddr*)&server_sockaddr, sizeof(struct sockaddr_un));
+}
+
+void unix_socket_check_connection(struct unix_socket* us) {
+    fd_set temp_client_set;
+    int current_sock;
+    
+    //Block until input arrives on one or more active sockets
+    temp_client_set = active_client_set;
+    
+    if(set_select(&temp_client_set) < 0)
+        exit(-1);
+}
+
+int s_getpeername(struct unix_socket* us, struct sockaddr_un* client) {
     socklen_t struct_len = sizeof(struct sockaddr_un);
     return getpeername(us->socket, (struct sockaddr *) &client, &struct_len);
 }
@@ -72,43 +92,8 @@ int s_recv(int sock, void* buffer, size_t length) {
     return recv(sock, buffer, length, 0);
 }
 
-int unix_socket_server_tcp(struct unix_socket* us, char* filename, int max_req) {	
-    if(unix_socket_init(us, TCP) < 0) 
-		return -1;
-    if(unix_socket_bind(us, filename) < 0)
-        return -1;
-    if(unix_socket_listen(us, max_req))
-        return -1;
-
-    return 0;
-}
-
 void print_err() {
     printf("%d: %s\n", errno, strerror(errno));
-}
-
-void server_function(int main_sock) {
-    fd_set temp_client_set;
-    int current_sock;
-    
-    //Block until input arrives on one or more active sockets
-    temp_client_set = active_client_set;
-    
-    if(set_select(&temp_client_set) < 0)
-        exit(-1);
-
-    //Service all the sockets with input pending.
-    for(current_sock = 0; current_sock < FD_SETSIZE; current_sock++) {
-        if(is_set(&temp_client_set, current_sock)) {
-            if(current_sock == main_sock)   // Connection request on original socket.    
-                add_new_client(main_sock);  
-            else
-                if(!receive_and_reply(current_sock)) // Data arriving on an already-connected socket.
-                    handle_lose_connection(current_sock);
-        }  
-    }
-    
-    return;
 }
 
 void unix_socket_prepare_set(struct unix_socket* us) {

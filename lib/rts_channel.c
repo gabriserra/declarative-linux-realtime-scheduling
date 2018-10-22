@@ -1,8 +1,9 @@
 #include "rts_channel.h"
+#include <string.h>
 
 int rts_channel_init(struct rts_channel* cc) {
     memset(cc, 0, sizeof(struct rts_channel));
-    return unix_socket_init(&(cc->sock));
+    return unix_socket_init(&(cc->sock), TCP);
 }
 
 int rts_channel_connect(struct rts_channel* cc) {
@@ -32,11 +33,11 @@ void rts_channel_d_init(struct rts_channel* cd) {
     return 0;
 }
 
-void rts_channel_d_newconn(struct rts_channel* cd) {
+void rts_channel_d_new_conn(struct rts_channel* cd) {
     unix_socket_check_connection(&(cd->sock));
 }
 
-int rts_channel_d_getconn(struct rts_channel* cd) {
+int rts_channel_d_get_size(struct rts_channel* cd) {
     return unix_socket_get_size(&(cd->sock));
 }
 

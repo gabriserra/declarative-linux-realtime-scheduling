@@ -12,6 +12,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/select.h>
        
 // ---------------------------------------------
 // DATA STRUCTURES
@@ -26,7 +27,17 @@ struct unix_socket {
     int socket;
     char* filepath;
     fd_set client_set;
-}
+};
+
+int unix_socket_init(struct unix_socket* us, int sock_type);
+
+int unix_socket_bind(struct unix_socket* us, char* filepath);
+
+int unix_socket_listen(struct unix_socket* us, int max_req);
+
+int unix_socket_accept(struct unix_socket* us, struct sockaddr_un* client);
+
+int s_getpeername(struct unix_socket* us, struct sockaddr_un* client);
 
 /** Send a message from a connected socket and return the number of byte sent or -1 otherwise
     Argument: int sock, void* buffer, size_t length
