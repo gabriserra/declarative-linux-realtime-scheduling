@@ -68,14 +68,8 @@ int unix_socket_connect(struct unix_socket* us, char* filepath) {
     return connect(us->socket, (struct sockaddr*)&server_sockaddr, sizeof(struct sockaddr_un));
 }
 
-void unix_socket_check_connection(struct unix_socket* us) {
-    fd_set temp_client_set;
-    int current_sock;
-    
-    //Block until input arrives on one or more active sockets
-    temp_client_set = active_client_set;
-    
-    if(set_select(&temp_client_set) < 0)
+void unix_socket_select(struct unix_socket* us) {
+    if(set_select(&(us->client_set)) < 0)
         exit(-1);
 }
 
@@ -95,6 +89,28 @@ int s_recv(int sock, void* buffer, size_t length) {
 void print_err() {
     printf("%d: %s\n", errno, strerror(errno));
 }
+
+
+void unix_socket_select(struct unix_socket* us, void* array[], size_t size) {
+    int i;
+    fd_set temp_client_set;
+
+    temp_client_set = us->client_set;
+    
+    if(set_select(&temp_client_set) < 0)
+        exit(-1);
+
+    for(i = 0; i < FD_SETSIZE; i++) {
+        if(is_set(&temp_client_set, i))
+            if(i == us->socket)
+                add_new_client(us->socket);  
+            else
+                recv(i, array[i], size, 0);  
+    }
+    
+    return;
+}
+
 
 void unix_socket_prepare_set(struct unix_socket* us) {
     FD_ZERO(&(us->client_set));

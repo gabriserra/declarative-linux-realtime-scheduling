@@ -37,6 +37,10 @@ void rts_channel_d_new_conn(struct rts_channel* cd) {
     unix_socket_check_connection(&(cd->sock));
 }
 
+void rts_channel_d_select(struct rts_channel* cd) {
+    unix_socket_select(&(cd->sock));
+}
+
 int rts_channel_d_get_size(struct rts_channel* cd) {
     return unix_socket_get_size(&(cd->sock));
 }

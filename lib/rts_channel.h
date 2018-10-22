@@ -17,6 +17,8 @@ void rts_channel_send(struct rts_channel* cc, struct rts_request* req);
 
 void rts_channel_d_init(struct rts_channel* cd);
 
+void rts_channel_d_select(struct rts_channel* cd);
+
 void rts_channel_d_new_conn(struct rts_channel* cd);
 
 int rts_channel_d_get_size(struct rts_channel* cd);
