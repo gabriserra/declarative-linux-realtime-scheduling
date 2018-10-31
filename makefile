@@ -1,7 +1,10 @@
 #--------------------------------------------------- 
 # Target file to be compiled by default
 #---------------------------------------------------
-# gcc -Wall -o exe src/rts_daemon.c lib/rts_channel.c lib/rts_scheduler.c
+# gcc -Wall -o exe src/rts_daemon.c lib/rts_access.c lib/rts_scheduler.c
+# gcc -Wall -o exe src/rts_daemon.c lib/rts_channel.c lib/rts_scheduler.c components/usocket.c lib/rts_utils.c lib/rts_taskset.c lib/rts_task.c components/list_ptr.c
+# gcc -Wall -o exe main.c lib/rts_channel.c lib/rts_scheduler.c components/usocket.c lib/rts_utils.c lib/rts_taskset.c lib/rts_task.c components/list_ptr.c
+
 DAEMON = rts_daemon
 #---------------------------------------------------
 # CC will be the compiler to use

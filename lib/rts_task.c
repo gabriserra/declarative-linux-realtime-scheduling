@@ -184,7 +184,7 @@ void calc_abs_value(struct rts_task* tp) {
 // return: void
 // ---
 void wait_for_period(struct rts_task* tp) {
-	clock_nanosleep(tp->clk, TIMER_ABSTIME, &(tp->at), NULL);
+	//clock_nanosleep(tp->clk, TIMER_ABSTIME, &(tp->at), NULL); -> TODO
 	time_add_ms(&(tp->at), tp->period);
 	time_add_ms(&(tp->dl), tp->period);
 }

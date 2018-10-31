@@ -1,28 +1,41 @@
 #include "rts_lib.h"
+#include <unistd.h>
+#include <string.h>
 
-int rts_daemon_connect(struct rts_channel* cc) {
-    if(rts_channel_init(cc) < 0)
-        return RTS_SOCK_ISSUE;
+int rts_daemon_connect(struct rts_access* c) {
+    if(rts_access_init(c) < 0)
+        return RTS_ERROR;
         
-    if(rts_channel_connect(cc) < 0)
-        return RTS_DAEMON_UNREACHBLE;
+    if(rts_access_connect(c) < 0)
+        return RTS_ERROR;
 
-    return RTS_CONNECTED;
+    c->req.req_type = RTS_CONNECTION;
+    c->req.payload.ids.pid = getpid();
+
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
+
+    if(c->rep.rep_type == RTS_CONNECTION_ERR)
+        return RTS_ERROR;
+
+    return RTS_OK;
 }
 
-float rts_cap_query(struct rts_channel* c, enum QUERY_TYPE type) {
-    struct rts_request req;
-    struct rts_reply rep;
+float rts_cap_query(struct rts_access* c, enum QUERY_TYPE type) {
+    c->req.req_type = RTS_CAP_QUERY;
+    c->req.payload.query_type = type;
 
-    req.req_type = RTS_CAP_QUERY;
-    req.payload.query_type = type;
-    rts_channel_send(c, &req);
-    rts_channel_recv(c, &rep);
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
 
-    if(rep.rep_type == RTS_CAP_QUERY_INVALID)
+    if(c->rep.rep_type == RTS_CAP_QUERY_ERR)
         return RTS_ERROR;
     
-    return rep.payload; 
+    return c->rep.payload; 
 }
 
 void rts_params_init(struct rts_params *tp) {
@@ -45,48 +58,98 @@ void rts_set_priority(struct rts_params* tp, uint32_t priority) {
     tp->priority = priority;
 }
 
-int rts_create_rsv(struct rts_channel* c, struct rts_params* tp, rsv_t* id) {
-    struct rts_request req;
-    struct rts_reply rep;
+void rts_params_cleanup(struct rts_params* tp) {
+    rts_params_init(tp);
+}
 
-    req.req_type = RTS_RSV_CREATE;
-    memcpy(&(req.payload.param), tp, sizeof(struct rts_params));
-    rts_channel_send(c, &req);
-    rts_channel_recv(c, &rep);
+int rts_create_rsv(struct rts_access* c, struct rts_params* tp, rsv_t* id) {
+    c->req.req_type = RTS_RSV_CREATE;
+    memcpy(&(c->req.payload.param), tp, sizeof(struct rts_params));
+    
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
 
-    if(rep.rep_type == RTS_RSV_NOT_CREATED)
+    if(c->rep.rep_type == RTS_RSV_CREATE_UN || c->rep.rep_type == RTS_RSV_CREATE_ERR)
         return RTS_NOT_GUARANTEED;
 
-    *id = rep.payload;
+    *id = (rsv_t) c->rep.payload;
     return RTS_GUARANTEED;
 }
 
-int rts_rsv_attach_thread(struct rts_channel* c, rsv_t id, pid_t pid) {
-    struct rts_request req;
-    struct rts_reply rep;
+int rts_rsv_attach_thread(struct rts_access* c, rsv_t id, pid_t pid) {
+    c->req.req_type = RTS_RSV_ATTACH;
+    c->req.payload.ids.rsvid = id;
+    c->req.payload.ids.pid = pid;
 
-    req.req_type = RTS_RSV_ATTACH;
-    req.payload.ids.rsvid = id;
-    req.payload.ids.pid = pid;
-    rts_channel_send(c, &req);
-    rts_channel_recv(c, &rep);
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
 
-    if(rep.rep_type == RTS_RSV_ATTACH_INVALID)
+    if(c->rep.rep_type == RTS_RSV_ATTACH_ERR)
         return RTS_ERROR;
 
     return RTS_OK;
 }
 
-int rts_rsv_detach_thread(struct rts_channel* c, rsv_t id) {
-    struct rts_request req;
-    struct rts_reply rep;
+int rts_rsv_detach_thread(struct rts_access* c, rsv_t id) {
+    c->req.req_type = RTS_RSV_DETACH;
+    c->req.payload.ids.rsvid = id;
 
-    req.req_type = RTS_RSV_DETACH;
-    req.payload.ids.rsvid = id;
-    rts_channel_send(c, &req);
-    rts_channel_recv(c, &rep);
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
 
-    if(rep.rep_type == RTS_RSV_DETACH_INVALID)
+    if(c->rep.rep_type == RTS_RSV_DETACH_ERR)
+        return RTS_ERROR;
+
+    return RTS_OK;
+}
+
+int rts_rsv_get_remaining_budget(struct rts_access* c, rsv_t id, float* budget) {
+    c->req.req_type = RTS_RSV_QUERY;
+    c->req.payload.ids.rsvid = id;    
+
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
+
+    if(c->rep.rep_type == RTS_RSV_QUERY_ERR)
+        return RTS_ERROR;
+
+    *budget = c->rep.payload;
+    return RTS_OK;
+}
+
+int rts_rsv_destroy(struct rts_access* c, rsv_t id) {
+    c->req.req_type = RTS_RSV_DESTROY;
+    c->req.payload.ids.rsvid = id;
+
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
+
+    if(c->rep.rep_type == RTS_RSV_DESTROY_ERR)
+        return RTS_ERROR;
+
+    return RTS_OK;
+}
+
+int rts_rsv_deconnect(struct rts_access* c) {
+    c->req.req_type = RTS_DECONNECTION;
+    c->req.payload.ids.pid = getpid();
+
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
+
+    if(c->rep.rep_type == RTS_DECONNECTION_ERR)
         return RTS_ERROR;
 
     return RTS_OK;

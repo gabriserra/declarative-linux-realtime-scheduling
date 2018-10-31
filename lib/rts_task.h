@@ -19,13 +19,27 @@ enum PARAM {
 	PRIORITY
 };
 
+enum SCHED {
+	NONE,
+	SS,
+	EDF,
+	RM,
+	DM,
+	FP,
+	RR,
+	CUSTOM // ?
+};
+
 #define ASC 1
 #define DSC -1
 
 struct rts_task {
+	pid_t			ptid;		// parent tid
 	pid_t			tid;		// thread/process id
 	clockid_t 		clk;		// type of clock to be used [REALTIME, MONOTONIC, ...]
+	enum SCHED		sched;		// if != NONE -> the scheduling alg
 	uint64_t		wcet;		// worst case ex time [microseconds]
+	uint64_t		acet;		// average case ex time [microseconds]
 	uint32_t 		period;		// period of task [millisecond]
 	uint32_t 		deadline;	// relative deadline [millisecond]
 	uint32_t 		priority;	// priority of task [LOW_PRIO, HIGH_PRIO] 
@@ -98,5 +112,7 @@ void wait_for_period(struct rts_task* tp);
 uint32_t deadline_miss(struct rts_task* tp);
 
 int task_cmp_deadline(struct rts_task* tp1, struct rts_task* tp2);
+
+int task_cmp(struct rts_task* tp1, struct rts_task* tp2, enum PARAM p, int flag);
 
 #endif

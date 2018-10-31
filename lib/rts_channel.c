@@ -1,54 +1,100 @@
 #include "rts_channel.h"
 #include <string.h>
 
-int rts_channel_init(struct rts_channel* cc) {
-    memset(cc, 0, sizeof(struct rts_channel));
-    return unix_socket_init(&(cc->sock), TCP);
-}
+// ACCESS ----
 
-int rts_channel_connect(struct rts_channel* cc) {
-    return unix_socket_connect(&(cc->sock));
-}
-
-void rts_channel_recv(struct rts_channel* cc, struct rts_reply* rep) {
-    unix_socket_receive(&(cc->sock), (void *)rep, sizeof(struct rts_reply));
-}
-
-void rts_channel_send(struct rts_channel* cc, struct rts_request* req) {
-    unix_socket_send(&(cc->sock), (void *)req, sizeof(struct rts_request));
-}
-
-void rts_channel_d_init(struct rts_channel* cd) {
-    memset(cd, 0, sizeof(struct rts_channel));
-
-    if(unix_socket_init(&(cd->sock), TCP) < 0) 
-		return -1;
-
-    if(unix_socket_bind(&(cd->sock), CHANNEL_PATH) < 0)
+int rts_access_init(struct rts_access* c) {
+    if(usocket_init(&(c->sock), TCP) < 0)
         return -1;
-
-    if(unix_socket_listen(&(cd->sock), BACKLOG_MAX))
+    if(usocket_timeout(&(c->sock), CHANNEL_TIMEOUT) < 0)
         return -1;
 
     return 0;
 }
 
-void rts_channel_d_new_conn(struct rts_channel* cd) {
-    unix_socket_check_connection(&(cd->sock));
+int rts_access_connect(struct rts_access* c) {
+    return usocket_connect(&(c->sock), CHANNEL_PATH);
 }
 
-void rts_channel_d_select(struct rts_channel* cd) {
-    unix_socket_select(&(cd->sock));
+int rts_access_recv(struct rts_access* c) {
+    return usocket_recv(&(c->sock), (void *)&(c->rep), sizeof(struct rts_reply));
 }
 
-int rts_channel_d_get_size(struct rts_channel* cd) {
-    return unix_socket_get_size(&(cd->sock));
+int rts_access_send(struct rts_access* c) {
+    return usocket_send(&(c->sock), (void *)&(c->req), sizeof(struct rts_request));
 }
 
-void rts_channel_d_recv(struct rts_channel* cd, struct rts_request* req, int i) {
-    unix_socket_receive(&(cd->sock), i, (void *)req, sizeof(struct rts_request));
+// CARRIER ----
+
+int rts_carrier_init(struct rts_carrier* c) {
+    memset(c, 0, sizeof(struct rts_access));
+
+    if(usocket_init(&(c->sock), TCP) < 0) 
+		return -1;
+
+    if(usocket_bind(&(c->sock), CHANNEL_PATH) < 0)
+        return -1;
+
+    if(usocket_listen(&(c->sock), BACKLOG_MAX))
+        return -1;
+
+    if(usocket_nonblock(&(c->sock)) < 0)
+        return -1;
+
+    return 0;
 }
 
-void rts_channel_d_send(struct rts_channel* cd, struct rts_reply* rep, int i) {
-    unix_socket_send(&(cd->sock), i, (void *)rep, sizeof(struct rts_reply));
+void rts_carrier_new_conn(struct rts_carrier* c) {
+    int i = usocket_add_connections(&(c->sock));
+
+    if(i != -1)
+        c->client[i].state = CONNECTED;
+}
+
+int rts_carrier_get_conn(struct rts_carrier* c) {
+    return usocket_get_maxfd(&(c->sock));
+}
+
+struct rts_client* rts_carrier_get_client(struct rts_carrier* c, int cli_id) {
+    return &(c->client[cli_id]);
+}
+
+struct rts_request* rts_carrier_get_req(struct rts_carrier* c, int cli_id) {
+    return &(c->last_req[cli_id]);
+}
+
+void rts_carrier_update(struct rts_carrier* c) {
+    int i, n;
+
+    n = usocket_get_maxfd(&(c->sock));
+    memset(&(c->last_n), 0, n+1);
+    usocket_recvall(&(c->sock), (void*)&(c->last_req), (int*)&(c->last_n), sizeof(struct rts_request));
+    
+    for(i = 0; i <= n; i++) {
+        if(c->client[i].state == EMPTY)
+            continue;
+        else if(c->last_n[i] < 0)
+            c->client[i].state = ERROR;
+        else
+            c->client[i].state = DISCONNECTED;   
+    }
+}
+
+int rts_carrier_isupdated(struct rts_carrier* c, int cli_id) {
+    if(c->last_n[cli_id] > 0)
+        return 1;
+    
+    return 0;
+}
+
+void rts_carrier_setpid(struct rts_carrier* c, int cli_id, pid_t pid) {
+    c->client[cli_id].pid = pid;
+}
+
+void rts_carrier_rm_conn(struct rts_access* cd) {
+    return;
+}
+
+int rts_carrier_send(struct rts_carrier* c, struct rts_reply* r, int cli_id) {
+    return usocket_sendto(&(c->sock), (void*)r, sizeof(struct rts_reply), cli_id);
 }

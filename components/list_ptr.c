@@ -263,7 +263,6 @@ void* list_ptr_get_top_elem(struct list_ptr* l) {
  * @endinternal
  */
 void* list_ptr_get_i_elem(struct list_ptr* l, unsigned int i) {
-    int j;
     struct node_ptr* n;
 
     n = list_ptr_get_i_node(l, i);

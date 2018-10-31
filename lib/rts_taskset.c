@@ -168,7 +168,7 @@ struct node_ptr* rts_taskset_get_i_node(struct rts_taskset* ts, unsigned int i) 
  * @endinternal
  */
 struct node_ptr* rts_taskset_get_next_node(struct rts_taskset* ts, struct node_ptr* node) {
-    list_ptr_get_next_node(&(ts->tasks), node);
+    return list_ptr_get_next_node(&(ts->tasks), node);
 }
 
 /**

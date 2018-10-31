@@ -5,8 +5,13 @@
         "unix_socket.h": "c",
         "stdio.h": "c",
         "rt_taskset.h": "c",
-        "rts_channel.h": "c",
+        "rts_access.h": "c",
         "rt_task.h": "c",
-        "time.h": "c"
+        "time.h": "c",
+        "stdlib.h": "c",
+        "rts_types.h": "c",
+        "rts_lib.h": "c",
+        "rts_channel.h": "c",
+        "shm.h": "c"
     }
 }
