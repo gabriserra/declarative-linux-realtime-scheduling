@@ -8,7 +8,7 @@ int rts_access_init(struct rts_access* c) {
         return -1;
     if(usocket_timeout(&(c->sock), CHANNEL_TIMEOUT) < 0)
         return -1;
-
+   
     return 0;
 }
 
@@ -30,25 +30,19 @@ int rts_carrier_init(struct rts_carrier* c) {
     memset(c, 0, sizeof(struct rts_access));
 
     if(usocket_init(&(c->sock), TCP) < 0) 
-		return -1;
+        return -1;
 
     if(usocket_bind(&(c->sock), CHANNEL_PATH) < 0)
         return -1;
 
-    if(usocket_listen(&(c->sock), BACKLOG_MAX))
-        return -1;
-
-    if(usocket_nonblock(&(c->sock)) < 0)
+    if(usocket_listen(&(c->sock), BACKLOG_MAX) < 0)
         return -1;
 
     return 0;
 }
 
-void rts_carrier_new_conn(struct rts_carrier* c) {
-    int i = usocket_add_connections(&(c->sock));
-
-    if(i != -1)
-        c->client[i].state = CONNECTED;
+void rts_carrier_prepare(struct rts_carrier* c) {
+    usocket_prepare_recv(&(c->sock));
 }
 
 int rts_carrier_get_conn(struct rts_carrier* c) {
@@ -63,6 +57,14 @@ struct rts_request* rts_carrier_get_req(struct rts_carrier* c, int cli_id) {
     return &(c->last_req[cli_id]);
 }
 
+enum CLIENT_STATE rts_carrier_get_state(struct rts_carrier* c, int cli_id) {
+    return c->client[cli_id].state;
+}
+
+void rts_carrier_set_state(struct rts_carrier* c, int cli_id, enum CLIENT_STATE s) {
+    c->client[cli_id].state = s;
+}
+
 void rts_carrier_update(struct rts_carrier* c) {
     int i, n;
 
@@ -71,8 +73,10 @@ void rts_carrier_update(struct rts_carrier* c) {
     usocket_recvall(&(c->sock), (void*)&(c->last_req), (int*)&(c->last_n), sizeof(struct rts_request));
     
     for(i = 0; i <= n; i++) {
-        if(c->client[i].state == EMPTY)
+        if(c->client[i].state == EMPTY && c->last_n[i] == 0)
             continue;
+        else if(c->client[i].state == EMPTY && c->last_n[i] != 0)
+            c->client[i].state = CONNECTED;
         else if(c->last_n[i] < 0)
             c->client[i].state = ERROR;
         else

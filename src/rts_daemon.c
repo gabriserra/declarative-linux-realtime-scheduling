@@ -33,9 +33,6 @@ void daemon_loop() {
 
     while(1) {
 
-        printf("In attesa di connessioni..\n");
-        rts_carrier_new_conn(&(data.chann));
-
         printf("In attesa di aggiornamenti..\n");
         rts_carrier_update(&(data.chann));
         
@@ -61,11 +58,12 @@ void handle_req(int cli_id) {
     struct rts_request* req;
     struct rts_reply rep;
     int is_updated, n;
+    enum CLIENT_STATE state;
 
     client = rts_carrier_get_client(&(data.chann), cli_id);
     
     if(client->state == ERROR || client->state == DISCONNECTED) {
-        client->state = EMPTY;
+        rts_carrier_set_state(&(data.chann), cli_id, EMPTY);
         rts_scheduler_delete(&(data.sched), client->pid);
         return;
     }

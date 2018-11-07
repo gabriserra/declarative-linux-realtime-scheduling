@@ -64,7 +64,7 @@ int usocket_recvfrom(struct usocket* us, void* elem, size_t size, int i);
 
 int usocket_sendto(struct usocket* us, void* elem, size_t size, int i);
 
-int usocket_recvall(struct usocket* us, void* data[SET_MAX_SIZE], int nrecv[SET_MAX_SIZE], size_t size);
+int usocket_recvall(struct usocket* us, void* data, int nrecv[SET_MAX_SIZE], size_t size);
 
 int usocket_add_connections(struct usocket* us);
 
@@ -77,5 +77,7 @@ int usocket_block(struct usocket* us);
 int usocket_timeout(struct usocket* us, int ms);
 
 int usocket_get_maxfd(struct usocket* us);
+
+void usocket_prepare_recv(struct usocket* us);
 
 #endif

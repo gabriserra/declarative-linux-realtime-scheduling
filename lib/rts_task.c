@@ -64,10 +64,14 @@ static int time_cmp(struct timespec t1, struct timespec t2) {
 //------------------------------------------
 
 // Instanciate and initialize a real time task structure
-int rts_task_init(struct rts_task *tp, pid_t tid, clockid_t clk) {
-	tp->tid = tid;
-	tp->clk = clk;
-	return 1;
+int rts_task_init(struct rts_task *tp, rsv_t id) {
+    tp = calloc(1, sizeof(struct rts_task));
+    
+    if(tp == NULL)
+        return -1;
+    
+    tp->id = id;
+    return 0;
 }
 
 // Instanciate and initialize a real time task structure from another one
@@ -91,7 +95,7 @@ void rts_task_destroy(struct rts_task *tp) {
 //------------------------------------------------
 
 // Set the task worst case execution time
-void set_wcet(struct rts_task* tp, uint64_t wcet) {
+void rts_task_set_wcet(struct rts_task* tp, uint64_t wcet) {
 	tp->wcet = wcet;
 }
 
@@ -101,7 +105,7 @@ uint64_t get_wcet(struct rts_task* tp) {
 }
 
 // Set the task period
-void set_period(struct rts_task* tp, uint32_t period) {
+void rts_task_set_period(struct rts_task* tp, uint32_t period) {
 	tp->period = period;
 }
 
@@ -261,4 +265,44 @@ int task_cmp(struct rts_task* tp1, struct rts_task* tp2, enum PARAM p, int flag)
 		default:
 			return flag * task_cmp_priority(tp1, tp2);
 	}
+}
+
+float rts_task_calc_budget(struct rts_task* t) {
+    float period;
+    float wcet;
+    
+    if(t->period != 0)
+        period = t->period;
+    else
+        period = rts_task_get_est_param(t, EST_PERIOD);
+    
+    if(t->wcet != 0)
+        wcet = t->wcet;
+    else
+        wcet = rts_task_get_est_param(t, EST_WCET);
+}
+
+float rts_task_calc_rem_budget(struct rts_task* t) {    
+    uint64_t total_et;
+    uint64_t last_et;
+    uint64_t current_et;
+    float period;
+    float total_budget;
+    
+    total_et = rts_task_get_est_param(t, EST_TOTALET);
+    last_et = rts_task_get_est_param(t, EST_LASTET);
+    current_et = MICRO_TO_MILLI(total_et - last_et);
+    
+    if(t->period != 0)
+        period = t->period;
+    else
+        period = rts_task_get_est_param(t, EST_PERIOD);
+    
+    total_budget = rts_task_calc_budget(t);
+    
+    return total_budget - (current_et / period);
+}
+
+int rts_task_get_est_param(struct rts_task* t, int FLAG) {
+    return shatomic_get_value(&(t->est_param), FLAG);
 }

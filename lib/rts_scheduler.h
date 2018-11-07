@@ -39,22 +39,17 @@
 
 #include "rts_types.h"
 #include "rts_taskset.h"
+#include "rts_plugin.h"
 #include <sys/types.h>
 
-struct rts_sched_alg {
-    float curr_budget;
-    float (*test)(struct rts_task* t);
-    void (*schedule)(struct rts_task* t);
-    void (*deschedule)(struct rts_task* t);
-};
-
 struct rts_scheduler {
-    float sysbudget;
+    float sys_rt_budget;  // max 1.0 - min 0.0
     struct rts_taskset taskset;
-    struct rts_sched_alg* algorithms;
+    int num_of_plugin;
+    struct rts_sched_plugin* plg;
 };
 
-void rts_scheduler_init(struct rts_scheduler* s, float sysbudget);
+void rts_scheduler_init(struct rts_scheduler* s, float sys_free_budget);
 
 void rts_scheduler_delete(struct rts_scheduler* s, pid_t pid);
 

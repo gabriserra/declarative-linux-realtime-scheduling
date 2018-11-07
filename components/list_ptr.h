@@ -189,4 +189,6 @@ void* list_ptr_search_elem(struct list_ptr* l, void* elem, int (* cmpfun)(void* 
  */
 void list_ptr_sort(struct list_ptr* l, int (* cmpfun)(void* elem1, void* elem2));
 
+int list_ptr_remove(struct list_ptr* l, int (* cmpfun)(void* elem, void* key));
+
 #endif

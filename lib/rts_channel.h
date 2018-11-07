@@ -1,3 +1,6 @@
+#ifndef RTS_CHANNEL_H
+#define RTS_CHANNEL_H
+
 #include "rts_types.h"
 #include "../components/usocket.h"
 
@@ -32,7 +35,7 @@ int rts_access_send(struct rts_access* c);
 
 int rts_carrier_init(struct rts_carrier* c);
 
-void rts_carrier_new_conn(struct rts_carrier* c);
+void rts_carrier_prepare(struct rts_carrier* c);
 
 int rts_carrier_get_conn(struct rts_carrier* c);
 
@@ -41,6 +44,10 @@ void rts_carrier_update(struct rts_carrier* c);
 void rts_carrier_select(struct rts_carrier* c, struct rts_request arr[CHANNEL_MAX_SIZE]);
 
 int rts_carrier_isupdated(struct rts_carrier* c, int cli_id);
+
+enum CLIENT_STATE rts_carrier_get_state(struct rts_carrier* c, int cli_id);
+
+void rts_carrier_set_state(struct rts_carrier* c, int cli_id, enum CLIENT_STATE s);
 
 int rts_carrier_get_size(struct rts_carrier* c);
 
@@ -51,3 +58,6 @@ int rts_carrier_send(struct rts_carrier* c, struct rts_reply* rep, int i);
 struct rts_request* rts_carrier_get_req(struct rts_carrier* c, int cli_id);
 
 struct rts_client* rts_carrier_get_client(struct rts_carrier* c, int cli_id);
+
+#endif	// RTS_CHANNEL_H
+

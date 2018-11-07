@@ -343,3 +343,32 @@ void* list_ptr_search_elem(struct list_ptr* l, void* elem, int (* cmpfun)(void* 
 void list_ptr_sort(struct list_ptr* l, int (* cmpfun)(void* elem1, void* elem2)) {
     merge_sort(&(l->root), cmpfun);
 }
+
+int list_ptr_remove(struct list_ptr* l, void* key, int (* cmpfun)(void* elem, void* key)) {
+    struct node_ptr* seek;
+    struct node_ptr* prec;
+        
+    if(list_ptr_is_empty(l))
+        return;
+    
+    if(cmpfun(l->root->elem, key)) {
+        list_ptr_remove_top(l);
+        return;
+    }
+
+    prec = l->root;
+
+    for(seek = l->root->next; seek != NULL && cmpfun(seek->elem, key) != 0;) {
+        prec = prec->next;
+        seek = seek->next;
+    }
+    
+    if(seek == NULL)
+        return 0;
+
+    prec->next = seek->next;
+    free(seek);
+    l->n--;    
+    
+    return 1;
+}

@@ -6,8 +6,9 @@
 #define RTS_TASK_H
 
 #include <stdint.h>
-#include <sys/types.h>
 #include <time.h>
+#include <sys/types.h>
+#include "rts_types.h"
 
 #define LOW_PRIO 	1			// lowest RT priority
 #define HIGH_PRIO	99			// highest RT priority
@@ -19,33 +20,24 @@ enum PARAM {
 	PRIORITY
 };
 
-enum SCHED {
-	NONE,
-	SS,
-	EDF,
-	RM,
-	DM,
-	FP,
-	RR,
-	CUSTOM // ?
-};
-
 #define ASC 1
 #define DSC -1
 
 struct rts_task {
-	pid_t			ptid;		// parent tid
-	pid_t			tid;		// thread/process id
-	clockid_t 		clk;		// type of clock to be used [REALTIME, MONOTONIC, ...]
-	enum SCHED		sched;		// if != NONE -> the scheduling alg
-	uint64_t		wcet;		// worst case ex time [microseconds]
-	uint64_t		acet;		// average case ex time [microseconds]
-	uint32_t 		period;		// period of task [millisecond]
-	uint32_t 		deadline;	// relative deadline [millisecond]
-	uint32_t 		priority;	// priority of task [LOW_PRIO, HIGH_PRIO] 
-	uint32_t 		dmiss;		// num of deadline misses
-	struct timespec at;			// next activation time 
-	struct timespec dl; 		// absolute deadline
+    rsv_t id;
+    pid_t               ptid;		// parent tid
+    pid_t               tid;		// thread/process id
+    clockid_t           clk;            // type of clock to be used [REALTIME, MONOTONIC, ...]
+    uint64_t		wcet;		// worst case ex time [microseconds]
+    uint64_t		acet;		// average case ex time [microseconds]
+    uint32_t 		period;		// period of task [millisecond]
+    uint32_t 		deadline;	// relative deadline [millisecond]
+    uint32_t 		priority;	// priority of task [LOW_PRIO, HIGH_PRIO] 
+    uint32_t 		dmiss;		// num of deadline misses
+    struct timespec     at;			// next activation time 
+    struct timespec     dl;                     // absolute deadline
+    enum SCHED          sched;                       // if != NONE -> the scheduling alg
+    struct shatomic     est_param;      // nactivation, wcet, period
 };
 
 //------------------------------------------
@@ -53,7 +45,7 @@ struct rts_task {
 //------------------------------------------
 
 // Instanciate and initialize a real time task structure
-int rts_task_init(struct rts_task *tp, pid_t tid, clockid_t clk);
+int rts_task_init(struct rts_task *tp, rsv_t id);
 
 // Instanciate and initialize a real time task structure from another one
 int rts_task_copy(struct rts_task *tp, struct rts_task *tp_copy);
@@ -66,13 +58,13 @@ void rts_task_destroy(struct rts_task *tp);
 //------------------------------------------------
 
 // Set the task worst case execution time
-void set_wcet(struct rts_task* tp, uint64_t wcet);
+void rts_task_set_wcet(struct rts_task* tp, uint64_t wcet);
 
 // Get the task worst case execution time
 uint64_t get_wcet(struct rts_task* tp);
 
 // Set the task period
-void set_period(struct rts_task* tp, uint32_t period);
+void rts_task_set_period(struct rts_task* tp, uint32_t period);
 
 // Get the task period
 uint32_t get_period(struct rts_task* tp);
@@ -114,5 +106,11 @@ uint32_t deadline_miss(struct rts_task* tp);
 int task_cmp_deadline(struct rts_task* tp1, struct rts_task* tp2);
 
 int task_cmp(struct rts_task* tp1, struct rts_task* tp2, enum PARAM p, int flag);
+
+float rts_task_calc_budget(struct rts_task* t);
+
+float rts_task_calc_rem_budget(struct rts_task* t);
+
+int rts_task_get_est_param(struct rts_task* t, int FLAG);
 
 #endif

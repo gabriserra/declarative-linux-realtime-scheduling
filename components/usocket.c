@@ -1,8 +1,6 @@
 #include "usocket.h"
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
 #include <sys/un.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -131,24 +129,36 @@ int usocket_get_maxfd(struct usocket* us) {
     return us->conn_set_max;
 }
 
-int usocket_recvall(struct usocket* us, void* data[SET_MAX_SIZE], int nrecv[SET_MAX_SIZE], size_t size) {
+void usocket_prepare_recv(struct usocket* us) {
+    FD_ZERO(&(us->conn_set));
+    FD_SET(us->socket, &(us->conn_set));
+    us->conn_set_max = us->socket;
+}
+
+int usocket_recvall(struct usocket* us, void* data, int nrecv[SET_MAX_SIZE], size_t size) {
     int i;
-    struct timeval tv;
     fd_set temp_conn_set;
 
     FD_ZERO(&temp_conn_set);
     FD_COPY(&(us->conn_set), &temp_conn_set);
-    FD_CLR(us->socket, &temp_conn_set);
-
-    tv.tv_sec = 0;
-    tv.tv_usec = SELECT_MAX_WAIT * 1000;
-
-    if(select(us->conn_set_max+1, &temp_conn_set, 0, 0, &tv) < 0)
+    
+    if(select(us->conn_set_max+1, &temp_conn_set, 0, 0, 0) < 0)
         return -1;
 
-    for(i = 0; i <= us->conn_set_max; i++)
-        if(FD_ISSET(i, &temp_conn_set)) 
-            nrecv[i] = recv(i, data[i], size, 0);
+    for(i = 0; i <= us->conn_set_max; i++) {
+        if(!FD_ISSET(i, &temp_conn_set))
+            continue;
+
+        if(i == us->socket) {
+            nrecv[i] = usocket_add_connections(us);
+            continue;
+        }
+        
+        nrecv[i] = recv(i, data+(i*size), size, 0);
+
+        if(!nrecv[i])
+            FD_CLR(i, &(us->conn_set));
+    }
 
     return 0;
 }

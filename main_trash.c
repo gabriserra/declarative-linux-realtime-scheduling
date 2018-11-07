@@ -1,17 +1,8 @@
-#include "src/rts_lib.h"
-#include <pthread.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <unistd.h>
-
-int computation_ended() {
-    return 1;
-}
-
-void exit_err(char* strerr) {
-    printf("FATAL: %s\n", strerr);
-    exit(EXIT_FAILURE);
-}
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
 
 void* RT_task(void* arg) {
     /* parameters for reserving CPU */
@@ -54,7 +45,8 @@ void* RT_task(void* arg) {
 
         rts_rsv_begin(&c, rsv_id);
 
-        compute();
+        compute_for(EXECUTION_TIME);
+        
         rts_rsv_get_remaining_budget(&c, rsv_id, &rmng_budget);
         
         if(rmng_budget > 15000)
@@ -73,17 +65,4 @@ void* RT_task(void* arg) {
     exit(EXIT_SUCCESS);
 
     return NULL;
-}
-
-int main(int argc, char* argv[]) {
-    /* thread descriptor */
-    pthread_t tid;
-
-    /* spawn thread */
-    pthread_create(&tid, NULL, RT_task, NULL);
-
-    /* wait spawned thread */
-    pthread_join(tid, NULL);
-
-    exit(EXIT_SUCCESS);
 }

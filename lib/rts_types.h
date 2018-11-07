@@ -1,9 +1,10 @@
+#ifndef RTS_TYPES_H
+#define RTS_TYPES_H
+
 #include <stdint.h>
 #include <time.h>
 #include <sys/types.h>
-
-#ifndef RTS_TYPES_H
-#define RTS_TYPES_H
+#include "../components/shatomic.h"
 
 #define RTS_OK 0
 #define RTS_ERROR -1
@@ -11,7 +12,29 @@
 #define RTS_GUARANTEED 0
 #define RTS_NOT_GUARANTEED -1
 
+#define EST_NACTIVATION 0 // default 1 (pure number)
+#define EST_LASTACTIVATION 1 // (ms from unix epoch)
+#define EST_WCET 2  // default 1 (micro)
+#define EST_LASTET 3 // micro at lastactivation
+#define EST_TOTALET 4 // micro
+#define EST_PERIOD 5 // default UINT32_MAX (ms)
+
+#define MICRO_TO_MILLI(var) (var * 1000)
+
 typedef uint32_t rsv_t;
+
+#define stringfy(name) #name
+
+enum SCHED {
+	NONE, // nulla
+	EDF,
+	SSRM,
+	DM, // evito
+	FP,
+	RR,
+        CUSTOM, // evito
+        NUM_OF_SCHED
+};
 
 enum QUERY_TYPE {
     RTS_BUDGET,
@@ -60,9 +83,10 @@ enum CLIENT_STATE {
 struct rts_params {
     clockid_t 		clk;
     uint32_t		budget;		// worst case ex time [microseconds]
-	uint32_t 		period;		// period of task [millisecond]
-	uint32_t 		deadline;	// relative deadline [millisecond]
-	uint32_t 		priority;	// priority of task [LOW_PRIO, HIGH_PRIO]
+    uint32_t 		period;		// period of task [millisecond]
+    uint32_t 		deadline;	// relative deadline [millisecond]
+    uint32_t 		priority;	// priority of task [LOW_PRIO, HIGH_PRIO]
+    struct shatomic     estimatedp;     // nactivation, period, wcet
 };
 
 struct rts_ids {
@@ -89,4 +113,5 @@ struct rts_client {
     pid_t pid;
 };
 
-#endif
+#endif	// RTS_TYPES_H
+

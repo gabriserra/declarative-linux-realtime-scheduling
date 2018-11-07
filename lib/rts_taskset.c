@@ -43,7 +43,12 @@ static int rts_taskset_cmp_wcet_asc(void* task1, void* task2) {
 static int rts_taskset_cmp_wcet_dsc(void* task1, void* task2) {
     return task_cmp((struct rts_task*) task1, (struct rts_task*) task2, WCET, DSC);
 }
-
+static int rts_taskset_cmp_ppid(void* task, void* ppid) {
+    struct rts_task* t = (struct rts_task*)task;
+    pid_t p = (pid_t)ppid; 
+    
+    return (t->ptid == p);
+}
 
 // -----------------------------------------------------
 // PUBLIC METHOD
@@ -222,6 +227,17 @@ void rts_taskset_sort(struct rts_taskset* ts, enum PARAM p, int flag) {
         default:
             break;
     }
+}
+
+int rts_taskset_remove(struct rts_taskset* ts, pid_t ppid) {
+    return list_ptr_remove(&(ts->tasks), (void*)&ppid, rts_taskset_cmp_ppid);
+}
+
+void rts_taskset_remove_all(struct rts_taskset* ts, pid_t ppid) {
+    int removed = 1;
+    
+    while(removed)
+        removed = rts_taskset_remove(ts, ppid);
 }
 
 /*

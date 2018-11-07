@@ -214,14 +214,7 @@ void list_int_sort(struct list_int* l, int (* cmpfun)(int elem1, int elem2));
  * @param elem2 the second integer element
  * @return 1 if elem1 > elem2, 0 if elem1 == elem2, -1 if elem1 < elem2
  */
-int int_cmp_asc(int elem1, int elem2) {
-    if(elem1 > elem2)
-        return 1;
-    else if(elem1 < elem2)
-        return -1;
-    else
-        return 0;
-}
+int int_cmp_asc(int elem1, int elem2);
 
 /**
  * @brief Compare two integer elements
@@ -234,13 +227,6 @@ int int_cmp_asc(int elem1, int elem2) {
  * @param elem2 the second integer element
  * @return -1 if elem1 > elem2, 0 if elem1 == elem2, 1 if elem1 < elem2
  */
-int int_cmp_dsc(int elem1, int elem2) {
-    if(elem1 > elem2)
-        return -1;
-    else if(elem1 < elem2)
-        return 1;
-    else
-        return 0;
-}
+int int_cmp_dsc(int elem1, int elem2);
 
 #endif

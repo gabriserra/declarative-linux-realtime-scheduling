@@ -2,16 +2,18 @@
 #ifndef _ATOMIC_H
 #define _ATOMIC_H
 
+#include <stdint.h>
+
 /* Check GCC version, just to be safe */
-#if !defined(__GNUC__) || (__GNUC__ < 4) || (__GNUC_MINOR__ < 1)
-	# error atomic.h works only with GCC newer than version 4.1
+#if !defined(__GNUC__) || (__GNUC__ < 4) || (__GNUC_MINOR__ < 1) || !defined(__LP64__)
+    # error atomic.h works only with GCC newer than version 4.1
 #endif
 
 /**
  * Atomic type.
  */
 typedef struct {
-	volatile int counter;
+    volatile uint64_t counter;
 } atomic_t;
 
 #define ATOMIC_INIT(i)  { (i) }
