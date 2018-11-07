@@ -1,12 +1,12 @@
-#include "src/rts_lib.h"
 #include "test.h"
+#include "lib/rts_lib.h"
 #include <pthread.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/syscall.h>
 
-#define NPARAMS 3   // USAGE ./nome numerothread nomefile
+#define NPARAMS 3   
 #define COLUMN_MAX 80
 
 int* tids;
@@ -32,22 +32,15 @@ void* RT_task(void* argv) {
     // thread loop
 
     while(!computation_ended(real_activation_num)) {
-        
         rts_rsv_begin(p);                       // begin to consume time..
-        
         clock_gettime(CLOCK_MONOTONIC, ts);     // get curr time
-        
         compute_for(&ts, real_exec_time);        // simulation compute task
-
         rts_rsv_end(p);                         // end to consume time
-
         wait_next_activation(&ts, real_period);
-        
         rts_rsv_renew(p);
     }
 
     exit(EXIT_SUCCESS);
-
     return NULL;
 }
 
