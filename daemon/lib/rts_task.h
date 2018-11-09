@@ -113,4 +113,6 @@ float rts_task_calc_rem_budget(struct rts_task* t);
 
 int rts_task_get_est_param(struct rts_task* t, int FLAG);
 
+float rts_task_utilization(struct rts_task* t);
+
 #endif

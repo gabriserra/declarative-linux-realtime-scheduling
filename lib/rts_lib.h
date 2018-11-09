@@ -1,10 +1,20 @@
-#include "../lib/rts_channel.h"
+#ifndef RTS_LIB_H
+#define RTS_LIB_H
+
+#include "../daemon/lib/rts_channel.h"
+#include <time.h>
+
+#define REACTIVITY 0.5
 
 int rts_daemon_connect(struct rts_access* c);
 
 float rts_cap_query(struct rts_access* c, enum QUERY_TYPE type);
 
-void rts_params_init(struct rts_params *tp);
+int rts_params_init(struct rts_params *tp);
+
+void rts_set_clock(struct rts_params* tp, clockid_t clk);
+
+clockid_t rts_get_clock(struct rts_params* tp);
 
 void rts_set_period(struct rts_params* tp, uint32_t period);
 
@@ -27,3 +37,6 @@ int rts_rsv_get_remaining_budget(struct rts_access* c, rsv_t id, float* budget);
 int rts_rsv_destroy(struct rts_access* c, rsv_t id);
 
 int rts_rsv_deconnect(struct rts_access* c);
+
+#endif	// RTS_LIB_H
+

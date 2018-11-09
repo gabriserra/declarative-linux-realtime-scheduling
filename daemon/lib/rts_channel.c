@@ -53,8 +53,8 @@ struct rts_client* rts_carrier_get_client(struct rts_carrier* c, int cli_id) {
     return &(c->client[cli_id]);
 }
 
-struct rts_request* rts_carrier_get_req(struct rts_carrier* c, int cli_id) {
-    return &(c->last_req[cli_id]);
+struct rts_request rts_carrier_get_req(struct rts_carrier* c, int cli_id) {
+    return c->last_req[cli_id];
 }
 
 enum CLIENT_STATE rts_carrier_get_state(struct rts_carrier* c, int cli_id) {

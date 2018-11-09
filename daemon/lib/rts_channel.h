@@ -55,7 +55,7 @@ void rts_carrier_recv(struct rts_carrier* c, struct rts_request* req, int i);
 
 int rts_carrier_send(struct rts_carrier* c, struct rts_reply* rep, int i);
 
-struct rts_request* rts_carrier_get_req(struct rts_carrier* c, int cli_id);
+struct rts_request rts_carrier_get_req(struct rts_carrier* c, int cli_id);
 
 struct rts_client* rts_carrier_get_client(struct rts_carrier* c, int cli_id);
 

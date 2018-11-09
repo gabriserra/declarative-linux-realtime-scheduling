@@ -55,11 +55,11 @@ void rts_scheduler_delete(struct rts_scheduler* s, pid_t pid);
 
 float rts_scheduler_get_remaining_budget(struct rts_scheduler* s);
 
-rsv_t rts_scheduler_create(struct rts_scheduler* s, struct rts_params* tp, int cli_id);
+rsv_t rts_scheduler_create(struct rts_scheduler* s, struct rts_params* tp);
 
-int rts_scheduler_attach(struct rts_scheduler* s, int cli_id, rsv_t rsvid, pid_t pid);
+int rts_scheduler_attach(struct rts_scheduler* s, rsv_t rsvid, pid_t pid);
 
-int rts_scheduler_detach(struct rts_scheduler* s, int cli_id, rsv_t rsvid, pid_t pid);
+int rts_scheduler_detach(struct rts_scheduler* s, rsv_t rsvid);
 
 float rts_scheduler_get_task_budget(struct rts_scheduler* s, rsv_t rsvid);
 

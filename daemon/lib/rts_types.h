@@ -12,14 +12,17 @@
 #define RTS_GUARANTEED 0
 #define RTS_NOT_GUARANTEED -1
 
-#define EST_NACTIVATION 0 // default 1 (pure number)
-#define EST_LASTACTIVATION 1 // (ms from unix epoch)
-#define EST_WCET 2  // default 1 (micro)
-#define EST_LASTET 3 // micro at lastactivation
-#define EST_TOTALET 4 // micro
-#define EST_PERIOD 5 // default UINT32_MAX (ms)
+// estimated parameters
 
-#define MICRO_TO_MILLI(var) (var * 1000)
+#define EST_NUM_ACTIVATION  0   // default: 0 [pure number]
+#define EST_ABS_ACTIVATION  1   // default: time at first activation [ms] 
+#define EST_ABS_FINISHING   2   // default: time at first finishing time [ms]
+#define EST_PERIOD          3   // default: MAX_INT_32 [ms]
+#define EST_WCET            4   // default: MAX_INT_32 / 3 [ms]
+
+// meglio una reservation grande o piccola all'inizio?!
+// nel primo caso ricalcolando sono tranquillo
+// nel secondo caso rischio che poi vada fuori
 
 typedef uint32_t rsv_t;
 
