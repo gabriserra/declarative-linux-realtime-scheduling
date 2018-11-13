@@ -1,0 +1,38 @@
+/*
+
+- SE CHIESTO ESPLICITAMENTE USARE UN PLUGIN?
+- SE NESSUN TASK SPECIFICA PRIO/DEADLINE/PERIODO -> SCHED RR
+- SE ALMENO UNO SPECIFICA PRIORITA -> SCHED FIFO
+- SE ALMENO UNO SPECIFICA PRIO/PERIODO -> RM o EDF (OVER SCHED_FIFO)
+- SE ALMENO UNO SPECIFICA PRIO/DEADLINE = PERIODO -> RM o EDF (OVER SCHED_FIFO)
+- SE ALMENO UNO SPECIFICA PRIO/DEADLINE != PERIODO -> DM o EDF (OVER SCHED_FIFO)
+- SE ALMENO UNO SPECIFICA ISOLAMENTO TEMPORALE -> SPORADIC (OVER SCHED_DEADLINE)
+
+- per ogni item, se supero fattore U max, rigetto la richiesta
+- per ogni item, se non supero fattore U max ma il test di schedulabilità fallisce
+  provo a passare ad EDF (se non voglio isolamento temporale)
+
+--> PER FORZA, SE NON SPECIFICHI NE WCET NE DEADLINE
+    DEVI SPECIFICARE UNA AVG, ALTRIMENTI NON ACCETTO LO SCHEDULING
+--> TASK
+    aggiorno media esecuzione
+--> TEST:
+    -calcolo budget richiesto dalla prenotazione
+    -controllo che sys_budget passato abbia almeno tot budget rimasto
+    -specifico il numero di parametri ideali e quelli che mi hanno passato
+    -calcolo indice schedulabilità
+--> SCELGO QUELLO CON INDICE PIU ALTO.
+    A PARITA DI INDICE QUELLO CON KERNEL PRIO PIU ALTA
+--> SCHEDULO
+
+--> SCHED_EDF SONO BASATI SU SCHED_DEAD -> non devo fare nulla solo test amm
+        -> SCHED_EDF(deadline/periodo/wcet)
+--> SCHED_RM / SCHED_DM / SCHED_FP -> BASATI SU SCHED_FIFO -> devo allocare priorità
+        -> SCHED_DM (deadline/periodo diversi fra di loro)
+        -> SCHED_RM/SS (wcet/periodo)
+        -> SCHED_FP (prio)
+--> SCHED_RTS -> BASATO SU SCHED_RR -> solo test amm (avg) | 
+
+--> 25 prio per SCHED_RM/DM/FP? 98 prio per 3 sched -> 32 per ALGO
+
+*/

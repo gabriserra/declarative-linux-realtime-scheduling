@@ -202,7 +202,7 @@ int list_int_get_size(struct list_int* l) {
  * 
  * @endinternal
  */
-void list_int_int_add_top(struct list_int* l, int elem) {
+void list_int_add_top(struct list_int* l, int elem) {
     struct node_int* new = alloc(1, sizeof(struct node_int));
 
     new->next = l->root;
@@ -293,7 +293,6 @@ int* list_int_get_top_elem(struct list_int* l) {
  * @endinternal
  */
 int* list_int_get_i_elem(struct list_int* l, unsigned int i) {
-    int j;
     struct node_int* n;
 
     n = list_int_get_i_node(l, i);

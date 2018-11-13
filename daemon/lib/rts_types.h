@@ -19,25 +19,9 @@
 #define EST_ABS_FINISHING   2   // default: time at first finishing time [ms]
 #define EST_PERIOD          3   // default: MAX_INT_32 [ms]
 #define EST_WCET            4   // default: MAX_INT_32 / 3 [ms]
-
-// meglio una reservation grande o piccola all'inizio?!
-// nel primo caso ricalcolando sono tranquillo
-// nel secondo caso rischio che poi vada fuori
+#define EST_PERTHREADCLK    5   // default: 0
 
 typedef uint32_t rsv_t;
-
-#define stringfy(name) #name
-
-enum SCHED {
-	NONE, // nulla
-	EDF,
-	SSRM,
-	DM, // evito
-	FP,
-	RR,
-        CUSTOM, // evito
-        NUM_OF_SCHED
-};
 
 enum QUERY_TYPE {
     RTS_BUDGET,

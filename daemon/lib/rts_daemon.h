@@ -14,9 +14,9 @@
 #ifndef RTS_DAEMON_H
 #define RTS_DAEMON_H
 
-#include "lib/rts_taskset.h"
-#include "lib/rts_channel.h"
-#include "lib/rts_scheduler.h"
+#include "rts_taskset.h"
+#include "rts_channel.h"
+#include "rts_scheduler.h"
 
 struct rts_daemon {
     struct rts_carrier chann;
@@ -24,9 +24,9 @@ struct rts_daemon {
     struct rts_taskset tasks;
 };
 
-void rts_daemon_term();
+void rts_daemon_init(struct rts_daemon* data);
 
-void rts_daemon_init();
+void rts_daemon_register_sig(void (*func)(int));
 
 void rts_daemon_handle_req(struct rts_daemon* data, int cli_id);
 

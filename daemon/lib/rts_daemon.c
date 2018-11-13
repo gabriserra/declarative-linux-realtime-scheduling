@@ -11,7 +11,7 @@
 static struct rts_reply req_connection(struct rts_daemon* data, int cli_id, pid_t ppid) {
     struct rts_reply rep;
     
-    rts_carrier_setpid(&(data->chann), cli_id, ppid);
+    rts_carrier_set_pid(&(data->chann), cli_id, ppid);
     rep.rep_type = RTS_CONNECTION_OK;
     
     return rep;
@@ -26,7 +26,7 @@ static struct rts_reply req_cap_query(struct rts_daemon* data, enum QUERY_TYPE t
             rep.rep_type = RTS_CAP_QUERY_OK;
             break;
         case RTS_REMAINING_BUDGET:
-            rep.payload = rts_scheduler_get_remaining_budget(&(data->sched));
+            rep.payload = rts_scheduler_remaining_budget(&(data->sched));
             rep.rep_type = RTS_CAP_QUERY_OK;
             break;
         default:
@@ -40,7 +40,7 @@ static struct rts_reply req_rsv_create(struct rts_daemon* data, struct rts_param
     int rsv_id;
     struct rts_reply rep;
     
-    rsv_id = rts_scheduler_create(&(data->sched), p);
+    rsv_id = rts_scheduler_rsv_create(&(data->sched), p);
             
     if(rsv_id < 0) {
         rep.rep_type = RTS_RSV_CREATE_ERR;
@@ -56,7 +56,7 @@ static struct rts_reply req_rsv_create(struct rts_daemon* data, struct rts_param
 static struct rts_reply req_rsv_attach(struct rts_daemon* data, rsv_t rsvid, pid_t pid) {
     struct rts_reply rep;
     
-    if(rts_scheduler_attach(&(data->sched), rsvid, pid) < 0)
+    if(rts_scheduler_rsv_attach(&(data->sched), rsvid, pid) < 0)
         rep.rep_type = RTS_RSV_ATTACH_ERR;
     else
         rep.rep_type = RTS_RSV_ATTACH_OK;
@@ -67,7 +67,7 @@ static struct rts_reply req_rsv_attach(struct rts_daemon* data, rsv_t rsvid, pid
 static struct rts_reply req_rsv_detach(struct rts_daemon* data, rsv_t rsvid) {
     struct rts_reply rep;
     
-    if(rts_scheduler_detach(&(data->sched), rsvid) < 0)
+    if(rts_scheduler_rsv_detach(&(data->sched), rsvid) < 0)
         rep.rep_type = RTS_RSV_DETACH_ERR;
     else
         rep.rep_type = RTS_RSV_DETACH_OK;
@@ -81,11 +81,11 @@ static struct rts_reply req_rsv_query(struct rts_daemon* data, rsv_t rsvid, enum
     switch(type) {
         case RTS_BUDGET:
             rep.rep_type = RTS_RSV_QUERY_OK;
-            rep.payload = rts_scheduler_get_task_budget(&(data->sched), rsvid);
+            rep.payload = rts_scheduler_rsv_budget(&(data->sched), rsvid);
             break;
         case RTS_REMAINING_BUDGET:
             rep.rep_type = RTS_RSV_QUERY_OK;
-            rep.payload = rts_scheduler_get_task_rem_budget(&(data->sched), rsvid);
+            rep.payload = rts_scheduler_rsv_rem_budget(&(data->sched), rsvid);
             break;
         default:
             rep.rep_type = RTS_RSV_QUERY_ERR;
@@ -97,7 +97,7 @@ static struct rts_reply req_rsv_query(struct rts_daemon* data, rsv_t rsvid, enum
 static struct rts_reply req_rsv_destroy(struct rts_daemon* data, rsv_t rsvid) {
     struct rts_reply rep;
     
-    if(rts_scheduler_destroy_rsv(&(data->sched), rsvid) < 0)
+    if(rts_scheduler_rsv_destroy(&(data->sched), rsvid) < 0)
         rep.rep_type = RTS_RSV_DESTROY_ERR;
     else
         rep.rep_type = RTS_RSV_DESTROY_OK;
@@ -105,15 +105,14 @@ static struct rts_reply req_rsv_destroy(struct rts_daemon* data, rsv_t rsvid) {
     return rep;
 }
 
-void rts_daemon_term() {
-    printf("Killed..\n");
-    exit(EXIT_SUCCESS);
+void rts_daemon_init(struct rts_daemon* data) {
+    rts_carrier_init(&(data->chann));
+    rts_taskset_init(&(data->tasks));
+    rts_scheduler_init(&(data->sched), read_rt_kernel_budget());
 }
 
-void rts_daemon_init() {
-    rts_carrier_init(&(data.chann));
-    rts_taskset_init(&(data.tasks));
-    rts_scheduler_init(&(data.sched), read_rt_kernel_budget());
+void rts_daemon_register_sig(void (*func)(int)) {
+    signal(SIGINT, func);
 }
 
 int rts_daemon_check_for_fail(struct rts_daemon* data, int cli_id) {
@@ -159,10 +158,10 @@ void rts_daemon_handle_req(struct rts_daemon* data, int cli_id) {
     if(!rts_daemon_check_for_update(data, cli_id))
         return;
        
-    sent = rts_daemon_process_req(&(data->chann), cli_id);
+    sent = rts_daemon_process_req(data, cli_id);
 
-    if(!sent < 0)
-        rts_daemon_set_fail(struct rts_daemon* data, int cli_id);    
+    if(sent <= 0)
+        rts_daemon_set_fail(data, cli_id);    
 }
 
 int rts_daemon_process_req(struct rts_daemon* data, int cli_id) {
@@ -171,26 +170,26 @@ int rts_daemon_process_req(struct rts_daemon* data, int cli_id) {
     
     req = rts_carrier_get_req(&(data->chann), cli_id);
     
-    switch(req->req_type) {
+    switch(req.req_type) {
         case RTS_CONNECTION:
-            rep = req_connection(data, cli_id, req->payload.ids.pid);
+            rep = req_connection(data, cli_id, req.payload.ids.pid);
             break;
         case RTS_CAP_QUERY:
-            rep = req_cap_query(data, req->payload.query_type);
+            rep = req_cap_query(data, req.payload.query_type);
             break;
         case RTS_RSV_CREATE:
-            rep = req_rsv_create(data, &(req->payload.param));
+            rep = req_rsv_create(data, &(req.payload.param));
             break;
         case RTS_RSV_ATTACH:
-            rep = req_rsv_attach(data, req->payload.ids.rsvid, req->payload.ids.pid);
+            rep = req_rsv_attach(data, req.payload.ids.rsvid, req.payload.ids.pid);
         case RTS_RSV_DETACH:
-            rep = req_rsv_detach(data, req->payload.ids.rsvid);
+            rep = req_rsv_detach(data, req.payload.ids.rsvid);
             break;
         case RTS_RSV_QUERY:
-            rep = req_rsv_query(data, req->payload.ids.rsvid, req->payload.query_type);
+            rep = req_rsv_query(data, req.payload.ids.rsvid, req.payload.query_type);
             break;
         case RTS_RSV_DESTROY:
-            rep = req_rsv_destroy(data, req->payload.ids.rsvid);
+            rep = req_rsv_destroy(data, req.payload.ids.rsvid);
             break;
         default:
             rep.rep_type = RTS_REQUEST_ERR;
@@ -204,7 +203,6 @@ void rts_daemon_loop(struct rts_daemon* data) {
 
     while(1) {
 
-        printf("In attesa di aggiornamenti..\n");
         rts_carrier_update(&(data->chann));
         
         for(i = 0; i <= rts_carrier_get_conn(&(data->chann)); i++)

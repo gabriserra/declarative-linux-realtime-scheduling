@@ -1,4 +1,3 @@
-
 #include "fifo.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,20 +6,20 @@
 #include <unistd.h>
 
 static void* alloc(int count, size_t dimension) {
-	void* ret = calloc(count, dimension);
+    void* ret = calloc(count, dimension);
 
-	if(ret != NULL)
-		return ret;
+    if(ret != NULL)
+        return ret;
 
-    printf("The system is out of memory-");
-	exit(-1);
+    printf("The system is out of memory!");
+    exit(-1);
 }
 
 void fifo_create(struct fifo* c, char* name, mode_t auth) {
     int ret = mkfifo(name, auth);
 
     if(ret < 0) {
-        printf("Unable to create communication fifo. Terminate."); //TODO - sys log or something similar
+        printf("Unable to create communication fifo. Terminate.");
         exit(-1);
     }
 

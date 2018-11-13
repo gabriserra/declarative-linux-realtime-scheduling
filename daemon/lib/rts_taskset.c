@@ -49,6 +49,13 @@ static int rts_taskset_cmp_ppid(void* task, void* ppid) {
     
     return (t->ptid == p);
 }
+static int rts_taskset_cmp_rsvid(void* task, void* rsvid) {
+    struct rts_task* t = (struct rts_task*)task;
+    rsv_t p = (rsv_t)rsvid; 
+    
+    return (t->id == p);
+}
+
 
 // -----------------------------------------------------
 // PUBLIC METHOD
@@ -124,8 +131,8 @@ void rts_taskset_add_sorted_dl(struct rts_taskset* ts, struct rts_task* task) {
  * 
  * @endinternal
  */
-void rts_taskset_remove_top(struct rts_taskset* ts) {
-    list_ptr_remove_top(&(ts->tasks));
+struct rts_task* rts_taskset_remove_top(struct rts_taskset* ts) {
+    return (struct rts_task*) list_ptr_remove_top(&(ts->tasks));
 }
 
 /**
@@ -229,15 +236,30 @@ void rts_taskset_sort(struct rts_taskset* ts, enum PARAM p, int flag) {
     }
 }
 
-int rts_taskset_remove(struct rts_taskset* ts, pid_t ppid) {
-    return list_ptr_remove(&(ts->tasks), (void*)&ppid, rts_taskset_cmp_ppid);
+struct rts_task* rts_taskset_remove_by_ppid(struct rts_taskset* ts, pid_t ppid) {
+    return (struct rts_task*) list_ptr_remove(&(ts->tasks), (void*)&ppid, rts_taskset_cmp_ppid);
 }
 
-void rts_taskset_remove_all(struct rts_taskset* ts, pid_t ppid) {
-    int removed = 1;
+struct rts_task* rts_taskset_remove_by_rsvid(struct rts_taskset* ts, rsv_t rsvid) {
+    return (struct rts_task*) list_ptr_remove(&(ts->tasks), (void*)&rsvid, rts_taskset_cmp_rsvid);
+}
+
+void rts_taskset_remove_all_by_ppid(struct rts_taskset* ts, pid_t ppid) {
+    struct rts_task* t;
     
-    while(removed)
-        removed = rts_taskset_remove(ts, ppid);
+    do {
+        t = rts_taskset_remove_by_ppid(ts, ppid);
+    }
+    while(t != NULL);
+        
+}
+
+iterator_t rts_taskset_iterator_init(struct rts_taskset* ts) {
+    return iterator_init(&(ts->tasks));
+}
+
+struct rts_task* rts_taskset_iterator_get_elem(iterator_t iterator) {
+    return (struct rts_task*) (iterator_get_elem(iterator));
 }
 
 /*

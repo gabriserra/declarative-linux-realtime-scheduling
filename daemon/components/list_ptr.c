@@ -226,17 +226,21 @@ void list_ptr_add_sorted(struct list_ptr* l, void* elem, int (* cmpfun)(void* el
  *  
  * @endinternal
  */
-void list_ptr_remove_top(struct list_ptr* l) {
+void* list_ptr_remove_top(struct list_ptr* l) {
+    void* elem;
     struct node_ptr* n;
 
     if(list_ptr_is_empty(l))
-        return;
+        return NULL;
     
     n = l->root;
     l->root = l->root->next;
     l->n--;
     
+    elem = n->elem;
     free(n);
+    
+    return elem;
 }
 
 /**
@@ -344,17 +348,16 @@ void list_ptr_sort(struct list_ptr* l, int (* cmpfun)(void* elem1, void* elem2))
     merge_sort(&(l->root), cmpfun);
 }
 
-int list_ptr_remove(struct list_ptr* l, void* key, int (* cmpfun)(void* elem, void* key)) {
+void* list_ptr_remove(struct list_ptr* l, void* key, int (* cmpfun)(void* elem, void* key)) {
+    void* elem;
     struct node_ptr* seek;
     struct node_ptr* prec;
         
     if(list_ptr_is_empty(l))
-        return;
+        return NULL;
     
-    if(cmpfun(l->root->elem, key)) {
-        list_ptr_remove_top(l);
-        return;
-    }
+    if(cmpfun(l->root->elem, key))
+        return list_ptr_remove_top(l);
 
     prec = l->root;
 
@@ -364,11 +367,25 @@ int list_ptr_remove(struct list_ptr* l, void* key, int (* cmpfun)(void* elem, vo
     }
     
     if(seek == NULL)
-        return 0;
+        return NULL;
 
     prec->next = seek->next;
-    free(seek);
-    l->n--;    
+    elem = seek->elem;
     
-    return 1;
+    l->n--;
+    free(seek);
+    
+    return elem;
+}
+
+iterator_t iterator_init(struct list_ptr* l) {
+    return l->root;
+}
+
+iterator_t iterator_get_next(iterator_t iterator) {
+    return iterator->next;
+}
+
+void* iterator_get_elem(iterator_t iterator) {
+    return iterator->elem;
 }

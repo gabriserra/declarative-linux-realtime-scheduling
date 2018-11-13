@@ -1,67 +1,78 @@
+#include "../lib/rts_taskset.h"
+#include <sched.h>
+#include <stdlib.h>
+#include <float.h>
+#include <stdint.h>
 
-#include "sched_ssrm.h"
-#include "../lib/rt_taskset.h"
-#include "../lib/rt_task.h"
-#include "../assets/list_int.h"
+void calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t) {
+    struct node_ptr* n;
+    struct rts_task* t;
+    unsigned int last_priority;
 
-/* SCHED_RM
-SE D = T
-SCHEDULABILITA SUFF HB
-EXACT RTA
+    rts_taskset_sort(ts, PERIOD, ASC);
+    n = rts_taskset_get_i_node(ts, 0);
+    t = (struct rts_task*) n->elem;
+    last_priority = 1;
 
-SE D < T
-EXACT RTA
+    while (n != NULL) {
+        t->priority = last_priority;
+        n = rts_taskset_get_next_node(ts, n);
+        t = (struct rts_task*) n->elem;
+        last_priority++;
+    }
+}
 
-for all i Ri <= Di
-Ri = Ci + sum k = 1..i-1 ceil(Ri/Tk) * Ck
-(e utilizzazione non deve superare il max)
-
-priorita di ogni task è proporzionale al periodo P = 1/T
-DM P = 1/D
-
-Con * mi servono metodi nel padre
-* calcola priorità
-* testa se schedulabile (con tolleranza)
-    - testa se schedulabile nec
-    - testa se schedulabile suff
-* schedula?
-*/
-
-void sched_rm_calc_priority(struct rt_taskset* ts) {
-	struct node_ptr* n;
-	struct rt_task* t;
-	unsigned int last_priority;
-
-	taskset_sort(ts, PERIOD, DSC);
-	n = taskset_get_i_node(ts, 0);
-	t = (struct rt_task*) n->elem;
-	last_priority = 1;
-
-	while (n != NULL) {
-		t->priority = last_priority;
-		n = taskset_get_next_node(ts, n);
-		t = (struct rt_task*) n->elem;
-		last_priority++;
-	}
-} 
+float test(struct rts_taskset* ts, struct rts_task* t, float free_budget) {
+    struct node_ptr* iter;
+    struct rts_task* t_ssrm;
+    struct rts_taskset ts_ssrm;
+    
+    if(free_budget < rts_task_utilization(t))
+        return 0;
+    
+    rts_taskset_init(&ts_ssrm);
+    
+    for(iter = ts_ssrm->tasks->root; iter != NULL; iter = iter->next) {
+        t_ssrm = (struct rts_task*) iter->elem;
+        if(t_ssrm->plugin == this->name)
+            rts_taskset_add_sorted_pr(&ts_ssrm, t_ssrm);
+    }
+    
+    if(hyperbolic_bound(&ts_ssrm))
+        return 0;
+    
+    if(workload_analysis(&ts_ssrm))
+        return 0;
+        
+    // check periodo reale e wcet reale
+    int required = 2; // wcet and period
+    int got = 0;
+    
+    if(t->wcet != 0)
+        got++;
+    if(t->period != 0)
+        got++;
+    
+    return (got/ (float)required);
+}
 
 //----------------------------------------------------------
 // WORKLOAD ANALYSIS: perform the sched. analysis under fp
 //----------------------------------------------------------
 
-unsigned int hyperbolic_bound(struct rt_taskset* ts) {
+unsigned int hyperbolic_bound(struct rts_taskset* ts) {
 	float res;
 	unsigned int i;
 	struct node_ptr* n;
-	struct rt_task* t;
+	struct rts_task* t;
 
-	n = taskset_get_i_node(ts, 0);
-	t = (struct rt_task*) n->elem;
+	n = rts_taskset_get_i_node(ts, 0);
+	t = (struct rts_task*) n->elem;
 	res = (t->wcet / t->period) + 1;
 
-	for(i = 1; i < taskset_get_size(ts); i++) {
-		n = taskset_get_next_node(ts, n);
-		t = (struct rt_task*) n->elem;
+	for(i = 1; i < rts_taskset_get_size(ts); i++) {
+		n = rts_taskset_get_next_node(ts, n);
+		t = (struct rts_task*) n->elem;
 		res *= (t->wcet / t->period) + 1;
 	}
 
@@ -73,14 +84,14 @@ unsigned int hyperbolic_bound(struct rt_taskset* ts) {
 
 // da riscrivere con accesso lineare!!!!!!!
 
-unsigned int workload_analysis(struct rt_taskset* ts) {
+unsigned int workload_analysis(struct rts_taskset* ts) {
 	struct list_int points;
 	int n_points, j, jth_point;
 	unsigned int i, is_schedulable;
 
 	list_int_init(&points);
 
-	for(i = 0; i < taskset_get_size(ts); i++) {
+	for(i = 0; i < rts_taskset_get_size(ts); i++) {
 		
 		is_schedulable = 0;
 		n_points = testing_set_fp(ts, &points, i);
@@ -105,14 +116,14 @@ unsigned int workload_analysis(struct rt_taskset* ts) {
 // WORKLOAD FUNTION: compute the workload function at time t for the given task
 //------------------------------------------------------------------------------
 
-unsigned int workload_function(struct rt_taskset* ts, unsigned int i, unsigned int t) {
-	struct rt_task* tj;
+unsigned int workload_function(struct rts_taskset* ts, unsigned int i, unsigned int t) {
+	struct rts_task* tj;
 	unsigned int j, res;
 	
-	res = taskset_get_i_task(ts, i)->wcet;
+	res = rts_taskset_get_i_task(ts, i)->wcet;
 	
 	for (j = 0; j < i; j++) {
-		tj = taskset_get_i_task(ts, j);
+		tj = rts_taskset_get_i_task(ts, j);
 		res += (unsigned int) ceil((double) t / tj->period) * tj->wcet;
 	}
 		
@@ -121,19 +132,19 @@ unsigned int workload_function(struct rt_taskset* ts, unsigned int i, unsigned i
 }
 
 // Calculate testing set points BB04
-int testing_set_fp(struct rt_taskset* ts, struct list_int* points, unsigned int i) {
+int testing_set_fp(struct rts_taskset* ts, struct list_int* points, unsigned int i) {
 	unsigned int tj_period, ti_deadline;
 	unsigned int j, k, index, already_present, n_points = 0;
 
-	if (i >= taskset_get_size(ts))
+	if (i >= rts_taskset_get_size(ts))
 		return -1;
 
-	ti_deadline = taskset_get_i_task(ts, i)->deadline;
+	ti_deadline = rts_taskset_get_i_task(ts, i)->deadline;
 	list_add_top(points, (void*) &ti_deadline);
 	
 	for (j = 0; j < i; j++) {
 		k = 1;
-		tj_period = taskset_get_i_task(ts, j)->period;
+		tj_period = rts_taskset_get_i_task(ts, j)->period;
 		
 		while (k * tj_period < ti_deadline) {
 			if(list_search_elem(points, k * tj_period) == NULL)
@@ -144,3 +155,31 @@ int testing_set_fp(struct rt_taskset* ts, struct list_int* points, unsigned int 
 
 	return list_get_size(points);
 }
+
+void schedule(struct rts_task* t) {
+    struct sched_param attr;
+    
+    attr.sched_priority = t->schedprio;
+    sched_setscheduler(t->tid, SCHED_FIFO, &attr);
+}
+
+void deschedule(struct rts_task* t) {
+    struct sched_param attr;
+    
+    attr.sched_priority = 0;
+    sched_setscheduler(t->tid, SCHED_OTHER, &attr);
+}
+
+void calc_budget(struct rts_plugin* this, struct rts_taskset* ts) {
+    node_ptr* iterator;
+    struct rts_task* t;
+    
+    for(iterator = ts->tasks->root; iterator != NULL; iterator = iterator->next) {
+        t = (struct rts_task*)iterator->elem;
+        
+        if(t->plugin == this->type)
+            this->used_budget += rts_task_utilization(t);
+        
+    }
+}
+

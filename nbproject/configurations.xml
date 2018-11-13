@@ -51,6 +51,7 @@
                    kind="IMPORTANT_FILES_FOLDER">
       <itemPath>nbproject/private/launcher.properties</itemPath>
     </logicalFolder>
+    <itemPath>trash/appuntischeduling.txt</itemPath>
   </logicalFolder>
   <sourceFolderFilter>^(nbproject)$</sourceFolderFilter>
   <sourceRootList>
@@ -131,6 +132,8 @@
       <item path="test/timeutils.c" ex="false" tool="0" flavor2="0">
       </item>
       <item path="test/timeutils.h" ex="false" tool="3" flavor2="0">
+      </item>
+      <item path="trash/appuntischeduling.txt" ex="false" tool="3" flavor2="0">
       </item>
       <item path="trash/main.c" ex="false" tool="0" flavor2="0">
       </item>

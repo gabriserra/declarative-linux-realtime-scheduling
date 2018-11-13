@@ -98,7 +98,7 @@ void rts_taskset_add_sorted_dl(struct rts_taskset* ts, struct rts_task* task);
  * 
  * @param ts: pointer to taskset to be used
  */
-void rts_taskset_remove_top(struct rts_taskset* ts);
+struct rts_task* rts_taskset_remove_top(struct rts_taskset* ts);
 
 /**
  * @brief Return a pointer to the first task of the list
@@ -164,6 +164,12 @@ struct node_ptr* rts_taskset_get_next_node(struct rts_taskset* ts, struct node_p
 void rts_taskset_sort(struct rts_taskset* ts, enum PARAM p, int flag);
 
 
-int rts_taskset_remove(struct rts_taskset* ts, pid_t ppid);
+struct rts_task* rts_taskset_remove_by_ppid(struct rts_taskset* ts, pid_t ppid);
+
+struct rts_task* rts_taskset_remove_by_rsvid(struct rts_taskset* ts, rsv_t rsvid);
+
+iterator_t rts_taskset_iterator_init(struct rts_taskset* ts);
+
+struct rts_task* rts_taskset_iterator_get_elem(iterator_t iterator);
 
 #endif

@@ -65,6 +65,10 @@ void rts_carrier_set_state(struct rts_carrier* c, int cli_id, enum CLIENT_STATE 
     c->client[cli_id].state = s;
 }
 
+void rts_carrier_set_pid(struct rts_carrier* c, int cli_id, pid_t pid) {
+    c->client[cli_id].pid = pid;
+}
+
 void rts_carrier_update(struct rts_carrier* c) {
     int i, n;
 

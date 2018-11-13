@@ -49,6 +49,8 @@ enum CLIENT_STATE rts_carrier_get_state(struct rts_carrier* c, int cli_id);
 
 void rts_carrier_set_state(struct rts_carrier* c, int cli_id, enum CLIENT_STATE s);
 
+void rts_carrier_set_pid(struct rts_carrier* c, int cli_id, pid_t pid);
+
 int rts_carrier_get_size(struct rts_carrier* c);
 
 void rts_carrier_recv(struct rts_carrier* c, struct rts_request* req, int i);
@@ -60,4 +62,3 @@ struct rts_request rts_carrier_get_req(struct rts_carrier* c, int cli_id);
 struct rts_client* rts_carrier_get_client(struct rts_carrier* c, int cli_id);
 
 #endif	// RTS_CHANNEL_H
-

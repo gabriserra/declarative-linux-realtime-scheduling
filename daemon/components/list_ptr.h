@@ -43,6 +43,15 @@ struct list_ptr {
     struct node_ptr*    root;   /** contains the pointer to root node of the list */
 };
 
+/**
+ * @brief Represent an iterator object
+ * 
+ * The iterator_t type represent an iterator, used to seek in easy
+ * way the list.
+ */
+
+typedef struct node_ptr* iterator_t;
+
 // ---------------------------------------------
 // MAIN METHODS
 // ---------------------------------------------
@@ -113,7 +122,7 @@ void list_ptr_add_sorted(struct list_ptr* l, void* elem, int (* cmpfun)(void* el
  * 
  * @param l: pointer to list to be used
  */
-void list_ptr_remove_top(struct list_ptr* l);
+void* list_ptr_remove_top(struct list_ptr* l);
 
 /**
  * @brief Return a pointer to the element contained in the first node
@@ -189,6 +198,13 @@ void* list_ptr_search_elem(struct list_ptr* l, void* elem, int (* cmpfun)(void* 
  */
 void list_ptr_sort(struct list_ptr* l, int (* cmpfun)(void* elem1, void* elem2));
 
-int list_ptr_remove(struct list_ptr* l, int (* cmpfun)(void* elem, void* key));
+void* list_ptr_remove(struct list_ptr* l, void* key, int (* cmpfun)(void* elem, void* key));
+
+iterator_t iterator_init(struct list_ptr* l);
+
+iterator_t iterator_get_next(iterator_t iterator);
+
+void* iterator_get_elem(iterator_t iterator);
 
 #endif
+

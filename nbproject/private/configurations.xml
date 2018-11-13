@@ -3,6 +3,8 @@
   <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
     <df root="." name="0">
       <df name="daemon">
+        <df name="bin">
+        </df>
         <df name="components">
           <in>atomic.h</in>
           <in>fifo.c</in>
@@ -61,6 +63,7 @@
         <in>main.c</in>
       </df>
     </df>
+    <itemPath>trash/appuntischeduling.txt</itemPath>
   </logicalFolder>
   <projectmakefile></projectmakefile>
   <confs>

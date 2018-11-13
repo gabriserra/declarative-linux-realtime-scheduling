@@ -34,11 +34,11 @@ void time_copy(struct timespec* td, struct timespec* ts);
 
 uint64_t timespec_to_us(struct timespec *t);
 
-void us_to_timespec(struct timespec *t, int us);
+void us_to_timespec(struct timespec *t, uint64_t us);
 
 uint32_t timespec_to_ms(struct timespec *t);
 
-void ms_to_timespec(struct timespec *t, int ms);
+void ms_to_timespec(struct timespec *t, uint32_t ms);
 
 struct timespec get_time_now(clockid_t clk);
 

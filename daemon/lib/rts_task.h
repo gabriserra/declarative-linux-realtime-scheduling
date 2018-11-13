@@ -9,6 +9,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include "rts_types.h"
+#include "rts_plugin.h"
 
 #define LOW_PRIO 	1			// lowest RT priority
 #define HIGH_PRIO	99			// highest RT priority
@@ -32,11 +33,10 @@ struct rts_task {
     uint64_t		acet;		// average case ex time [microseconds]
     uint32_t 		period;		// period of task [millisecond]
     uint32_t 		deadline;	// relative deadline [millisecond]
-    uint32_t 		priority;	// priority of task [LOW_PRIO, HIGH_PRIO] 
+    uint32_t 		priority;	// user priority of task 
+    uint32_t            schedprio;      // scheduling real prio [LOW_PRIO, HIGH_PRIO] 
     uint32_t 		dmiss;		// num of deadline misses
-    struct timespec     at;			// next activation time 
-    struct timespec     dl;                     // absolute deadline
-    enum SCHED          sched;                       // if != NONE -> the scheduling alg
+    enum plugin         plugin;         // if != NONE -> the scheduling alg
     struct shatomic     est_param;      // nactivation, wcet, period
 };
 
@@ -45,7 +45,7 @@ struct rts_task {
 //------------------------------------------
 
 // Instanciate and initialize a real time task structure
-int rts_task_init(struct rts_task *tp, rsv_t id);
+int rts_task_init(struct rts_task **tp, rsv_t id, clockid_t clk);
 
 // Instanciate and initialize a real time task structure from another one
 int rts_task_copy(struct rts_task *tp, struct rts_task *tp_copy);
@@ -83,25 +83,6 @@ uint32_t get_priority(struct rts_task* tp);
 
 // Get the deadline miss number
 uint32_t get_dmiss(struct rts_task* tp);
-
-// Get activation time (struct timespec)
-void get_activation_time(struct rts_task* tp, struct timespec* at);
-
-// Get absolute deadline (struct timespec)
-void get_deadline_abs(struct rts_task* tp, struct timespec* dl);
-
-//-------------------------------------
-// PUBLIC: TASK PARAMATER MANAGEMENT
-//--------------------------------------
-
-// Reads the curr time and computes the next activ time and the deadline
-void calc_abs_value(struct rts_task* tp);
-
-// Suspends the thread until the next activ and updates activ time and deadline
-void wait_for_period(struct rts_task* tp);
-
-// Check if thread is in execution after deadline and return 1, otherwise 0.
-uint32_t deadline_miss(struct rts_task* tp);
 
 int task_cmp_deadline(struct rts_task* tp1, struct rts_task* tp2);
 
