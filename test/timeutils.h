@@ -45,7 +45,11 @@ int time_cmp(struct timespec* t1, struct timespec* t2);
 
 void time_copy(struct timespec* td, struct timespec* ts);
 
+uint32_t timespec_to_ms(struct timespec *t);
+
 struct timespec get_time_now(clockid_t clk);
+
+uint32_t get_time_now_ms(clockid_t clk);
 
 void compute_for(struct timespec* t_init, uint32_t exec_milli_max);
 

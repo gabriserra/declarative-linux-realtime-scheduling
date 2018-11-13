@@ -52,6 +52,7 @@
       <df name="test">
         <in>confutils.c</in>
         <in>confutils.h</in>
+        <in>makefile</in>
         <in>memutils.c</in>
         <in>memutils.h</in>
         <in>test.c</in>

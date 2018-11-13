@@ -1,4 +1,5 @@
 #include "rts_lib.h"
+#include "../daemon/lib/rts_utils.h"
 #include <unistd.h>
 #include <string.h>
 

@@ -5,6 +5,7 @@
  */
 
 #include "timeutils.h"
+#include <stdlib.h>
 
 void time_add_us(struct timespec *t, uint64_t us) {
     t->tv_sec += MICRO_TO_SEC(us);               
@@ -50,6 +51,22 @@ struct timespec get_time_now(clockid_t clk) {
     
     clock_gettime(clk, &ts);
     return ts;
+}
+
+uint32_t timespec_to_ms(struct timespec *t) {
+    uint32_t ms;
+    
+    ms = SEC_TO_MILLI(t->tv_sec);
+    ms += NANO_TO_MILLI(t->tv_nsec);
+	
+    return ms;
+}
+
+uint32_t get_time_now_ms(clockid_t clk) {
+    struct timespec ts;
+    
+    clock_gettime(clk, &ts);
+    return timespec_to_ms(&ts);
 }
 
 void compute_for(struct timespec* t_init, uint32_t exec_milli_max) {

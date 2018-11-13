@@ -17,11 +17,13 @@
 #include <pthread.h>
 
 struct monitor {
-    pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
-    pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    pthread_mutex_t lock;
+    pthread_cond_t cond;
 };
 
 void alloc(int num, void** pointer, size_t size);
+
+void monitor_init(struct monitor* mem);
 
 void lock_and_test(struct monitor* mem, int* var, int value);
 

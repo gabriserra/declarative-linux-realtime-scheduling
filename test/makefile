@@ -1,7 +1,7 @@
 #--------------------------------------------------- 
 # Target file
 #---------------------------------------------------
-DAEMON = daemon
+TEST = test
 
 #---------------------------------------------------
 # Compiler
@@ -11,24 +11,22 @@ CC = gcc
 #--------------------------------------------------- 
 # Project paths
 #---------------------------------------------------
-LIB_PATH =  lib
-CMP_PATH =  components
-BIN_PATH =  bin
+LIB_PATH =  ../lib
 
 #---------------------------------------------------
 # Options passed to the compiler
 #---------------------------------------------------
-CFLAGS = -Wall -lpthread -std=c99 -lrt 
+CFLAGS = -Wall -std=c99 
 
 #---------------------------------------------------
 # Load library path
 #---------------------------------------------------
-CPPFLAGS = -I$(LIB_PATH) -I$(CMP_PATH)
+CPPFLAGS = -I$(LIB_PATH)
 
 #---------------------------------------------------
 # Modules loaded
 #---------------------------------------------------
-LDFLAGS = -L/usr/lib/x86_64-linux-gnu
+LDFLAGS = -L/usr/lib/x86_64-linux-gnu -pthread
 
 #--------------------------------------------------- 
 # DEBUG behavior 
@@ -43,52 +41,38 @@ endif
 # Dependencies
 #---------------------------------------------------
 
-CMP_ATO = $(CMP_PATH)/atomic
-CMP_LSI = $(CMP_PATH)/list_int
-CMP_LSP = $(CMP_PATH)/list_ptr
-CMP_SHM = $(CMP_PATH)/shatomic
-CMP_USK = $(CMP_PATH)/usocket
+UTILS_CONF = confutils.o
+UTILS_MEM = memutils.o
+UTILS_TIME = timeutils.o
 
-CMPS =	$(CMP_LSI) $(CMP_LSP) \
-	$(CMP_SHM) $(CMP_USK)
-
-CMPS_C = $(foreach CMP, $(CMPS), $(CMP).c)
-CMPS_O = ${CMPS_C:.c=.o}
-
-LIB_CHN = $(LIB_PATH)/rts_channel
-LIB_DAE = $(LIB_PATH)/rts_daemon
-LIB_PLG = $(LIB_PATH)/rts_plugin
-LIB_SCH = $(LIB_PATH)/rts_scheduler
-LIB_TSK = $(LIB_PATH)/rts_task
-LIB_TSS = $(LIB_PATH)/rts_taskset
-LIB_TYP = $(LIB_PATH)/rts_types
-LIB_UTS = $(LIB_PATH)/rts_utils
-
-LIBS =	$(LIB_CHN) $(LIB_DAE) $(LIB_PLG) $(LIB_SCH) \
-	$(LIB_TSK) $(LIB_TSS) $(LIB_UTS)
-	
-LIBS_C = $(foreach LIB, $(LIBS), $(LIB).c)
-LIBS_O = ${LIBS_C:.c=.o}
+UTILS_O = $(UTILS_CONF) $(UTILS_MEM) $(UTILS_TIME)
 		
 #--------------------------------------------------- 
 # Compile and create objects
 #---------------------------------------------------
 
-all: $(DAEMON)
+all: $(TEST)
 
-$(DAEMON): $(DAEMON).o $(CMPS_O) $(LIBS_O) 
-	$(CC) -o $(DAEMON) $(DAEMON).o $(CMPS_O) $(LIBS_O) $(LDFLAGS)
-	
-$(DAEMON).o: $(DAEMON).c 
-	$(CC) -c $(DAEMON).c
-	
-$(CMPS_O): %.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+$(TEST): $(LIB_PATH)/rts_lib.o $(UTILS_O) $(TEST).o  
+	$(CC) -o $(TEST) $(TEST).o $(UTILS_O) $(LDFLAGS)
 
-$(LIBS_O): %.o: %.c
-	$(CC) -c $(CFLAGS) $< -o $@
+$(LIB_PATH)/rts_lib.o: $(LIB_PATH)/rts_lib.c
+	$(CC) -c $(LIB_PATH)/rts_lib.c
+
+confutils.o: confutils.c 
+	$(CC) -c confutils.c
+	
+memutils.o: memutils.c
+	$(CC) -c memutils.c
+	
+timeutils.o: timeutils.c
+	$(CC) -lrt -c timeutils.c
+		
+$(TEST).o: $(TEST).c 
+	$(CC) -c $(TEST).c
 	
 clean:
-	@rm -rf $(DAEMON).o $(CMPS_O) $(LIBS_O)
+	@rm -rf $(TEST).o $(UTILS_O)
 	
+
 

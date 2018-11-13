@@ -6,6 +6,7 @@
 
 #include "memutils.h"
 #include <stdlib.h>
+#include <stdio.h>
 
 static void exit_err(char* strerr) {
     printf("FATAL: %s\n", strerr);
@@ -17,6 +18,11 @@ void alloc(int num, void** pointer, size_t size) {
     
     if((*pointer) == NULL)
         exit_err("Unable to allocate heap memory for threads data!\n");
+}
+
+void monitor_init(struct monitor* m) {
+    pthread_mutex_init(&(m->lock), NULL);
+    pthread_cond_init(&(m->cond), NULL);
 }
 
 void lock_and_test(struct monitor* m, int* var, int value) {

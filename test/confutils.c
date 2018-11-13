@@ -8,6 +8,11 @@
 #include "../lib/rts_lib.h"
 #include <stdlib.h>
 
+static void exit_err(char* strerr) {
+    printf("FATAL: %s\n", strerr);
+    exit(EXIT_FAILURE);
+}
+
 void conf_threads(char* filename, int nthread, struct rts_params* p) {
     FILE* f;
     uint32_t priority, budget, deadline, period;
@@ -24,19 +29,19 @@ void conf_threads(char* filename, int nthread, struct rts_params* p) {
         
         rts_set_clock(&(p[i]), CLOCK_MONOTONIC);
         
-        fscanf(f, "%d", priority);
+        fscanf(f, "%d", &priority);
         if(priority != 0)
             rts_set_priority(&(p[i]), priority);
         
-        fscanf(f, "%d", budget);
+        fscanf(f, "%d", &budget);
         if(budget != 0)
             rts_set_budget(&(p[i]), budget);
                 
-        fscanf(f, "%d", deadline);
+        fscanf(f, "%d", &deadline);
         if(deadline != 0)
             rts_set_deadline(&(p[i]), deadline);
                     
-        fscanf(f, "%d", period);
+        fscanf(f, "%d", &period);
         if(period != 0)
             rts_set_period(&(p[i]), period);
     }    

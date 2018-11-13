@@ -1,4 +1,6 @@
 #include "test.h"
+#include "confutils.h"
+#include "timeutils.h"
 #include "../lib/rts_lib.h"
 #include <pthread.h>
 #include <stdlib.h>
@@ -29,7 +31,7 @@ void* RT_task(void* argv)
     struct timespec t_activation_time;
         
     t_num = ((struct thread_params*) argv)->num;
-    t_par = ((struct thread_params*) argv)->p;
+    t_par = ((struct thread_params*) argv)->par;
     t_wcet = calc_exec(t_par->budget, t_par->period, t_par->deadline);
     t_period = calc_period(t_par->budget, t_par->period, t_par->deadline);
     t_activation_num_tot = calc_activation_num();
@@ -89,6 +91,8 @@ int main(int argc, char* argv[])
 
     if(!rts_cap_query(&rt_chn, RTS_REMAINING_BUDGET))
         exit_err("Remaining budget retrivial unsupported!\n");
+    
+    monitor_init(&m);
     
     for(int i = 0; i < nthread; i++) 
     {

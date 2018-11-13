@@ -14,8 +14,10 @@
 #ifndef THREADCONFUTILS_H
 #define THREADCONFUTILS_H
 
-#define COLUMN_MAX  80      // used to par
+#include <stdio.h>
+#include <stdint.h>
 
+#define COLUMN_MAX  80      // used to par
 #define DEADLINE_TO_PERIOD(dl) dl * 2
 #define WCET_TO_PERIOD(wcet) wcet * 3
 
