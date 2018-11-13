@@ -18,7 +18,7 @@ BIN_PATH =  bin
 #---------------------------------------------------
 # Options passed to the compiler
 #---------------------------------------------------
-CFLAGS = -Wall -lpthread -std=c99 -lrt 
+CFLAGS = -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result
 
 #---------------------------------------------------
 # Load library path
@@ -28,7 +28,7 @@ CPPFLAGS = -I$(LIB_PATH) -I$(CMP_PATH)
 #---------------------------------------------------
 # Modules loaded
 #---------------------------------------------------
-LDFLAGS = -L/usr/lib/x86_64-linux-gnu
+LDFLAGS = -L/usr/lib/x86_64-linux-gnu -ldl
 
 #--------------------------------------------------- 
 # DEBUG behavior 
@@ -77,7 +77,7 @@ LIBS_O = ${LIBS_C:.c=.o}
 all: $(DAEMON)
 
 $(DAEMON): $(DAEMON).o $(CMPS_O) $(LIBS_O) 
-	$(CC) -o $(DAEMON) $(DAEMON).o $(CMPS_O) $(LIBS_O) $(LDFLAGS)
+	$(CC) -o $(DAEMON) $(CFLAGS) $(DAEMON).o $(CMPS_O) $(LIBS_O) $(LDFLAGS)
 	
 $(DAEMON).o: $(DAEMON).c 
 	$(CC) -c $(DAEMON).c

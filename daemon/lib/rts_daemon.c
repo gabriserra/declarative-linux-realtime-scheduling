@@ -7,6 +7,8 @@
 #include "rts_daemon.h"
 #include "rts_utils.h"
 #include <stdlib.h>
+ #include <signal.h>
+
 
 static struct rts_reply req_connection(struct rts_daemon* data, int cli_id, pid_t ppid) {
     struct rts_reply rep;

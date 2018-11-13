@@ -45,13 +45,13 @@ static int rts_taskset_cmp_wcet_dsc(void* task1, void* task2) {
 }
 static int rts_taskset_cmp_ppid(void* task, void* ppid) {
     struct rts_task* t = (struct rts_task*)task;
-    pid_t p = (pid_t)ppid; 
+    pid_t p = (*(pid_t*)ppid); 
     
     return (t->ptid == p);
 }
 static int rts_taskset_cmp_rsvid(void* task, void* rsvid) {
     struct rts_task* t = (struct rts_task*)task;
-    rsv_t p = (rsv_t)rsvid; 
+    rsv_t p = (*(rsv_t*)rsvid); 
     
     return (t->id == p);
 }

@@ -1,6 +1,9 @@
+#define _GNU_SOURCE
+
 #include "test.h"
 #include "confutils.h"
 #include "timeutils.h"
+#include "memutils.h"
 #include "../lib/rts_lib.h"
 #include <pthread.h>
 #include <stdlib.h>
@@ -96,13 +99,15 @@ int main(int argc, char* argv[])
     
     for(int i = 0; i < nthread; i++) 
     {
-        if(rts_create_rsv(&rt_chn, &(rt_par[i]), &(rsv_id[i])) != RTS_GUARANTEED)
-            exit_err("Can't get scheduling guarantees for thread num: %d!\n", i);
+        if(rts_create_rsv(&rt_chn, &(rt_par[i]), &(rsv_id[i])) != RTS_GUARANTEED) {
+            printf("Can't get scheduling guarantees for thread num: %d!\n", i);
+            exit(EXIT_FAILURE);
+        }
 
         fill_params(&t_par, i, &(rt_par[i]));
         pthread_create(&(pt_id[i]), NULL, RT_task, (void*)&(t_par));
         lock_and_test(&m, &(t_ids[i]), 0);
-        rts_rsv_attach_thread(&rt_chn, &rsv_id, (*t_ids));        
+        rts_rsv_attach_thread(&rt_chn, rsv_id[i], (*t_ids));        
     }
     
     for (int i = 0; i < nthread; i++) 
@@ -120,7 +125,7 @@ int main(int argc, char* argv[])
 // MAIN THREAD FUNCTIONS
 
 void print_usage(char* program_name) {
-    printf("Usage: %s threadnumber filename", program_name);
+    printf("Usage: %s threadnumber filename\n", program_name);
     exit(EXIT_FAILURE);
 }
 

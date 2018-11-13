@@ -127,6 +127,7 @@ void rts_rsv_begin(struct rts_params* tp) {
     
     shatomic_put_value(&(tp->estimatedp), EST_NUM_ACTIVATION, ++t_act_num);
     shatomic_put_value(&(tp->estimatedp), EST_ABS_ACTIVATION, t_abs_act_curr);
+    shatomic_put_value(&(tp->estimatedp), EST_PERIOD, t_period_curr);
 }
 
 void rts_rsv_end(struct rts_params* tp) {

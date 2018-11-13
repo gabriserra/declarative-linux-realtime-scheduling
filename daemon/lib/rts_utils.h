@@ -4,6 +4,8 @@
 #include <time.h>
 #include <stdint.h>
 
+#define _GNU_SOURCE
+
 #define EXP3 1000
 #define EXP6 1000000
 #define EXP9 1000000000

@@ -4,6 +4,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+
+static const char *plugin_str[] = {
+    "NONE",
+    "EFD",
+    "SSRM",
+    "DM",
+    "FP",
+    "RR",
+    "CUSTOM"
+};
+
 static void skip_comment(FILE* f) {
     char buffer[COLUMN_MAX];
     

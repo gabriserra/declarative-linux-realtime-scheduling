@@ -36,7 +36,11 @@ int rts_rsv_get_remaining_budget(struct rts_access* c, rsv_t id, float* budget);
 
 int rts_rsv_destroy(struct rts_access* c, rsv_t id);
 
-int rts_rsv_deconnect(struct rts_access* c);
+int rts_daemon_deconnect(struct rts_access* c);
+
+void rts_rsv_begin(struct rts_params* tp);
+
+void rts_rsv_end(struct rts_params* tp);
 
 #endif	// RTS_LIB_H
 

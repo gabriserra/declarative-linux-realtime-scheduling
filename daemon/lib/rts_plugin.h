@@ -24,7 +24,6 @@
 #define BUDGET_FUN "calc_budget"
 #define PRIO_FUN "calc_prio"
 
-
 enum plugin {
     NONE,
     EDF,
@@ -34,16 +33,6 @@ enum plugin {
     RR,
     CUSTOM,
     NUM_OF_SCHED
-};
-
-static const char *plugin_str[] = {
-    "NONE",
-    "EFD",
-    "SSRM",
-    "DM",
-    "FP",
-    "RR",
-    "CUSTOM"
 };
 
 #define INT_TO_PLUGIN(var) (enum plugin)(var)
@@ -72,8 +61,6 @@ struct rts_plugin {
 };
 
 int rts_plugins_init(struct rts_plugin* plg, int* num);
-
-
 
 enum plugin get_plugin_from_str(char* str);
 

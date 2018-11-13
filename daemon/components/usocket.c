@@ -140,7 +140,7 @@ int usocket_recvall(struct usocket* us, void* data, int nrecv[SET_MAX_SIZE], siz
     fd_set temp_conn_set;
 
     FD_ZERO(&temp_conn_set);
-    FD_COPY(&(us->conn_set), &temp_conn_set);
+    temp_conn_set = us->conn_set; 
     
     if(select(us->conn_set_max+1, &temp_conn_set, 0, 0, 0) < 0)
         return -1;
