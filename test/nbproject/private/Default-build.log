@@ -1,0 +1,9 @@
+gcc -c -Wall -std=gnu99 -I../lib -O3 ../daemon/components/usocket.c -o ../daemon/components/usocket.o
+gcc -c -Wall -std=gnu99 -I../lib -O3 ../daemon/components/shatomic.c -o ../daemon/components/shatomic.o
+gcc -c -Wall -std=gnu99 -I../lib -O3 ../daemon/lib/rts_channel.c -o ../daemon/lib/rts_channel.o
+gcc -c -Wall -std=gnu99 -I../lib -O3 ../lib/rts_lib.c -o ../lib/rts_lib.o
+gcc -c confutils.c
+gcc -c memutils.c
+gcc -lrt -c timeutils.c
+gcc -c -Wall -std=gnu99 -I../lib -O3 test.c
+gcc -o test -Wall -std=gnu99 -I../lib -O3 ../daemon/components/usocket.o ../daemon/components/shatomic.o ../daemon/lib/rts_channel.o ../lib/rts_lib.o confutils.o memutils.o timeutils.o test.o  -L/usr/lib/x86_64-linux-gnu -pthread

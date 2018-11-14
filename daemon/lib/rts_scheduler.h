@@ -14,7 +14,7 @@ struct rts_scheduler {
     struct rts_plugin* plugin;
 };
 
-void rts_scheduler_init(struct rts_scheduler* s, float sys_free_budget);
+void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, float sys_rt_budget);
 
 void rts_scheduler_delete(struct rts_scheduler* s, pid_t pid);
 

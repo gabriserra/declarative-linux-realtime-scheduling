@@ -16,7 +16,8 @@
 
 #define COLUMN_MAX 82
 #define NAME_MAX 15
-#define PLUGIN_PATH "plugin"
+#define PLUGIN_CFG "plugin/schedconfig.cfg"
+#define PLUGIN_PREFIX "sched_"
 
 #define TEST_FUN "test"
 #define SCHEDULE_FUN "schedule"
@@ -60,7 +61,7 @@ struct rts_plugin {
     void (*calc_budget)(struct rts_plugin* this, struct rts_taskset* ts);
 };
 
-int rts_plugins_init(struct rts_plugin* plg, int* num);
+int rts_plugins_init(struct rts_plugin** plg, int* num);
 
 enum plugin get_plugin_from_str(char* str);
 

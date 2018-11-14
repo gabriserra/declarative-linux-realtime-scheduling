@@ -126,7 +126,7 @@ int usocket_timeout(struct usocket* us, int ms) {
 }
 
 int usocket_get_maxfd(struct usocket* us) {
-    return us->conn_set_max;
+    return us->conn_set_max > us->socket ? us->conn_set_max : us->socket;
 }
 
 void usocket_prepare_recv(struct usocket* us) {

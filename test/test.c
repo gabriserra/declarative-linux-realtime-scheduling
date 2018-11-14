@@ -10,6 +10,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <string.h>
+#include <errno.h>
 
 /**
  * Shared data between threads and main process.
@@ -74,21 +76,30 @@ int main(int argc, char* argv[])
     struct rts_params* rt_par;       /* parameters for reserving CPU */
     struct thread_params t_par;  /* thread call argument */
     
-    if(argc != NPARAMS)
-        print_usage(argv[0]);
+    //if(argc != NPARAMS)
+        //print_usage(argv[0]);
+
+    // DEBUG
+    char argvv[10];
+    char argvvv[50];
     
-    nthread = atoi(argv[1]);
+    strcpy(argvv, "2");
+    strcpy(argvvv, "threads.cfg");
+    
+    nthread = atoi(argvv);
     
     alloc(nthread, (void**)(&rsv_id), sizeof(rsv_t));
     alloc(nthread, (void**)(&rt_par), sizeof(struct rts_params));
     alloc(nthread, (void**)(&pt_id), sizeof(pthread_t));
     alloc(nthread, (void**)(&t_ids), sizeof(pid_t));
     
-    conf_threads(argv[2], nthread, rt_par);
+    conf_threads(argvvv, nthread, rt_par);
             
-    if(rts_daemon_connect(&rt_chn) != RTS_OK)
+    if(rts_daemon_connect(&rt_chn) != RTS_OK) {
+        printf("ERRORE: %s\n", strerror(errno));
         exit_err("Unable to connect with the RTS daemon\n");
-
+    }
+        
     if(!rts_cap_query(&rt_chn, RTS_BUDGET))
         exit_err("Notion of budget unsupported!");
 

@@ -24,7 +24,7 @@ struct rts_daemon {
     struct rts_taskset tasks;
 };
 
-void rts_daemon_init(struct rts_daemon* data);
+int rts_daemon_init(struct rts_daemon* data);
 
 void rts_daemon_register_sig(void (*func)(int));
 

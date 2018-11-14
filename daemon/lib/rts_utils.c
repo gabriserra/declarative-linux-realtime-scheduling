@@ -98,7 +98,7 @@ float read_rt_kernel_budget() {
     }
 
     fscanf(proc_rt_period, "%d", &rt_period);
-    fscanf(proc_rt_period, "%d", &rt_runtime);
+    fscanf(proc_rt_runtime, "%d", &rt_runtime);
 
     if(rt_runtime == -1)
         return 1;

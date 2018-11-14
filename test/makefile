@@ -18,7 +18,7 @@ CMP_PATH =  ../daemon/components
 #---------------------------------------------------
 # Options passed to the compiler
 #---------------------------------------------------
-CFLAGS = -Wall -std=gnu99 -I$(LIB_PATH)
+CFLAGS = -Wall -std=gnu99 -I$(LIB_PATH) -g -O0
 
 #---------------------------------------------------
 # Modules loaded
@@ -66,13 +66,13 @@ $(CMP_PATH)/usocket.o :
 	$(CC) -c $(CFLAGS) $(CMP_PATH)/usocket.c -o $(CMP_PATH)/usocket.o
 
 confutils.o: confutils.c 
-	$(CC) -c confutils.c
+	$(CC) -c $(CFLAGS) confutils.c
 	
 memutils.o: memutils.c
-	$(CC) -c memutils.c
+	$(CC) -c $(CFLAGS) memutils.c
 	
 timeutils.o: timeutils.c
-	$(CC) -lrt -c timeutils.c
+	$(CC) -lrt -c $(CFLAGS) timeutils.c
 		
 $(TEST).o: $(TEST).c 
 	$(CC) -c $(CFLAGS) $(TEST).c

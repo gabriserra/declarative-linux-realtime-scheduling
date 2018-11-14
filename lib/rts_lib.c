@@ -43,7 +43,7 @@ int rts_params_init(struct rts_params *tp) {
     memset(tp, 0, sizeof(struct rts_params));
     shatomic_init(&(tp->estimatedp));
     
-    if(shatomic_create(&(tp->estimatedp), 3) < 0)
+    if(shatomic_create(&(tp->estimatedp), EST_NVALUE) < 0)
         return -1;
     
     if(shatomic_attach(&(tp->estimatedp)) < 0)

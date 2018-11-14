@@ -20,6 +20,7 @@
 #define EST_PERIOD          3   // default: MAX_INT_32 [ms]
 #define EST_WCET            4   // default: MAX_INT_32 / 3 [ms]
 #define EST_PERTHREADCLK    5   // default: 0
+#define EST_NVALUE          6
 
 typedef uint32_t rsv_t;
 

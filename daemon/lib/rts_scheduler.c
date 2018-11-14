@@ -71,10 +71,10 @@ static int rts_scheduler_deschedule(struct rts_scheduler* s, struct rts_task* t)
 
 // PUBLIC
 
-void rts_scheduler_init(struct rts_scheduler* s, float sys_rt_budget) {
+void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, float sys_rt_budget) {
     s->sys_rt_budget = sys_rt_budget;
-    rts_taskset_init(s->taskset);
-    rts_plugins_init(s->plugin, &(s->num_of_plugin));
+    s->taskset = ts;
+    rts_plugins_init(&(s->plugin), &(s->num_of_plugin));
 }
 
 void rts_scheduler_delete(struct rts_scheduler* s, pid_t ppid) {   

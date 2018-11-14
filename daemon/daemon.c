@@ -8,14 +8,23 @@
 struct rts_daemon data;
 
 void term() {
-    printf("RTS daemon was signaled. It will stop.\n");
+    printf("\nRTS daemon was signaled. It will stop.\n");
     exit(EXIT_SUCCESS);
+}
+
+void exit_err(char* str) {
+    printf("%s", str);
+    exit(EXIT_FAILURE);
 }
 
 int main(int argc, char* argv[]) {
     printf("rtsdaemond - Daemon started.\n");
     
-    rts_daemon_init(&data);
+    if(rts_daemon_init(&data) < 0)
+        exit_err("Something gone wrong in the init phase.\n");
+    
     rts_daemon_register_sig(term);
     rts_daemon_loop(&data);
+    
+    return 0;
 }

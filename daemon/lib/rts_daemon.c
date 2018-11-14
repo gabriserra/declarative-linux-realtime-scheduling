@@ -7,7 +7,7 @@
 #include "rts_daemon.h"
 #include "rts_utils.h"
 #include <stdlib.h>
- #include <signal.h>
+#include <signal.h>
 
 
 static struct rts_reply req_connection(struct rts_daemon* data, int cli_id, pid_t ppid) {
@@ -107,10 +107,14 @@ static struct rts_reply req_rsv_destroy(struct rts_daemon* data, rsv_t rsvid) {
     return rep;
 }
 
-void rts_daemon_init(struct rts_daemon* data) {
-    rts_carrier_init(&(data->chann));
+int rts_daemon_init(struct rts_daemon* data) {
+    if(rts_carrier_init(&(data->chann)) < 0)
+        return -1;
+    
     rts_taskset_init(&(data->tasks));
-    rts_scheduler_init(&(data->sched), read_rt_kernel_budget());
+    rts_scheduler_init(&(data->sched), &(data->tasks), read_rt_kernel_budget());
+    
+    return 0;
 }
 
 void rts_daemon_register_sig(void (*func)(int)) {
@@ -202,6 +206,8 @@ int rts_daemon_process_req(struct rts_daemon* data, int cli_id) {
 
 void rts_daemon_loop(struct rts_daemon* data) {
     int i;
+    
+    rts_carrier_prepare(&(data->chann));
 
     while(1) {
 

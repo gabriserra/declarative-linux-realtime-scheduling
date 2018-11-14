@@ -7,7 +7,7 @@
 
 static const char *plugin_str[] = {
     "NONE",
-    "EFD",
+    "EDF",
     "SSRM",
     "DM",
     "FP",
@@ -21,7 +21,7 @@ static void skip_comment(FILE* f) {
     while(1) {
         fgets(buffer, COLUMN_MAX, f);
         
-        if(buffer[0] != '#')
+        if(buffer[0] == '!')
             break;
     } 
 }
@@ -60,7 +60,8 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
     char so_name[NAME_MAX];
     
     for(int i = 0; i < num_of_plugin; i++) {
-        strcpy(so_name, PLUGIN_TO_PLUGIN_STR(plg[i].type));
+        strcpy(so_name, "sched_");
+        strcat(so_name, PLUGIN_TO_PLUGIN_STR(plg[i].type));
         strcat(so_name, ".so");
 
         dl_ptr = dlopen(so_name, RTLD_NOW);
@@ -78,21 +79,21 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
     return 0;
 }
 
-int rts_plugins_init(struct rts_plugin* plg, int* num) {
+int rts_plugins_init(struct rts_plugin** plg, int* num) {
     FILE* f;
     int num_of_plugin;
     
-    f = fopen(PLUGIN_PATH, "r");
+    f = fopen(PLUGIN_CFG, "r");
     
     if(f == NULL)
         return -1;
     
     skip_comment(f);
     num_of_plugin = count_num_of_plugin(f);
-    plg = calloc(num_of_plugin, sizeof(struct rts_plugin));
+    (*plg) = calloc(num_of_plugin, sizeof(struct rts_plugin));
     
-    read_conf(f, plg);
-    load_libraries(plg, num_of_plugin);
+    read_conf(f, (*plg));
+    load_libraries((*plg), num_of_plugin);
     
     *num = num_of_plugin;
     fclose(f);

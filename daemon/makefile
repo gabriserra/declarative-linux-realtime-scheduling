@@ -18,7 +18,7 @@ BIN_PATH =  bin
 #---------------------------------------------------
 # Options passed to the compiler
 #---------------------------------------------------
-CFLAGS = -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result
+CFLAGS = -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -g -O0
 
 #---------------------------------------------------
 # Load library path
@@ -33,11 +33,11 @@ LDFLAGS = -L/usr/lib/x86_64-linux-gnu -ldl
 #--------------------------------------------------- 
 # DEBUG behavior 
 #---------------------------------------------------
-ifdef DEBUG
-    CFLAGS += -g -O0
-else
-    CFLAGS += -O3
-endif
+#ifdef DEBUG
+    #CFLAGS += -g -O0
+#else
+    #CFLAGS += -O3
+#endif
 
 #--------------------------------------------------- 
 # Dependencies

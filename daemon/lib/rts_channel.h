@@ -4,7 +4,8 @@
 #include "rts_types.h"
 #include "../components/usocket.h"
 
-#define CHANNEL_PATH "prova"
+#define CHANNEL_PATH_CARRIER "/tmp/channel"
+#define CHANNEL_PATH_ACCESS "/tmp/channel"
 #define CHANNEL_MAX_SIZE SET_MAX_SIZE
 #define CHANNEL_TIMEOUT 150
 

@@ -53,7 +53,7 @@ void skip_comment(FILE* f) {
     while(1) {
         fgets(buffer, COLUMN_MAX, f);
         
-        if(buffer[0] != '#')
+        if(buffer[0] == '!')
             break;
     } 
 }

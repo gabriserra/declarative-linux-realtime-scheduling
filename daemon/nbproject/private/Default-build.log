@@ -1,0 +1,13 @@
+gcc -c daemon.c
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 components/list_int.c -o components/list_int.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 components/list_ptr.c -o components/list_ptr.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 components/shatomic.c -o components/shatomic.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 components/usocket.c -o components/usocket.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 lib/rts_channel.c -o lib/rts_channel.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 lib/rts_daemon.c -o lib/rts_daemon.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 lib/rts_plugin.c -o lib/rts_plugin.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 lib/rts_scheduler.c -o lib/rts_scheduler.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 lib/rts_task.c -o lib/rts_task.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 lib/rts_taskset.c -o lib/rts_taskset.o
+gcc -c -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 lib/rts_utils.c -o lib/rts_utils.o
+gcc -o daemon -Wall -lpthread -std=gnu99 -lrt -ldl -Wno-unused-result -O3 daemon.o components/list_int.o components/list_ptr.o components/shatomic.o components/usocket.o lib/rts_channel.o lib/rts_daemon.o lib/rts_plugin.o lib/rts_scheduler.o lib/rts_task.o lib/rts_taskset.o lib/rts_utils.o -L/usr/lib/x86_64-linux-gnu -ldl
