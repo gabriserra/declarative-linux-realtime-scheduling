@@ -14,9 +14,9 @@ static int createkey() {
 
     if(mkstemp(template) < 0)
         return -1;
-
+    
     key = ftok(template, 0);
-
+    
     if (key < 0)
         return -1;
 
@@ -38,14 +38,15 @@ int shatomic_create(struct shatomic* mem, int nvalue) {
     size_t size;
     
     key = createkey();
+    //printf("%d - CHIAVE\n", key);
 
     if(key < 0)
         return -1;
 
     mem->nvalue = nvalue;
     size = nvalue * sizeof(atomic_t);
-    shmid = shmget(key, size, PRIVILEGES | IPC_CREAT | IPC_EXCL);
-
+    shmid = shmget(key, size, PRIVILEGES | IPC_CREAT);
+    
     if (shmid < 0)
         return -1;
 

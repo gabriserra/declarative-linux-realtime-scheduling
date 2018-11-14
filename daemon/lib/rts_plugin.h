@@ -15,9 +15,9 @@
 #define RTS_PLUGIN_H
 
 #define COLUMN_MAX 82
-#define NAME_MAX 15
+#define NAME_MAX 25
 #define PLUGIN_CFG "plugin/schedconfig.cfg"
-#define PLUGIN_PREFIX "sched_"
+#define PLUGIN_PREFIX "plugin/sched_"
 
 #define TEST_FUN "test"
 #define SCHEDULE_FUN "schedule"
@@ -54,9 +54,9 @@ struct rts_plugin {
     enum plugin type;
     float used_budget;
     
-    float (*test)(struct rts_task* t, float free_budget);
-    int (*schedule)(struct rts_plugin* this, struct rts_task* t);
-    int (*deschedule)(struct rts_plugin* this, struct rts_task* t);
+    float (*test)(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t, float free_budget);
+    int (*schedule)(struct rts_task* t);
+    int (*deschedule)(struct rts_task* t);
     void (*calc_prio) (struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t);
     void (*calc_budget)(struct rts_plugin* this, struct rts_taskset* ts);
 };

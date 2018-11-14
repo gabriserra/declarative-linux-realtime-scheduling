@@ -29,8 +29,7 @@ struct rts_task {
     pid_t               ptid;		// parent tid
     pid_t               tid;		// thread/process id
     clockid_t           clk;            // type of clock to be used [REALTIME, MONOTONIC, ...]
-    uint64_t		wcet;		// worst case ex time [microseconds]
-    uint64_t		acet;		// average case ex time [microseconds]
+    uint32_t		wcet;		// worst case ex time [microseconds]
     uint32_t 		period;		// period of task [millisecond]
     uint32_t 		deadline;	// relative deadline [millisecond]
     uint32_t 		priority;	// user priority of task 
@@ -61,19 +60,19 @@ void rts_task_destroy(struct rts_task *tp);
 void rts_task_set_wcet(struct rts_task* tp, uint64_t wcet);
 
 // Get the task worst case execution time
-uint64_t get_wcet(struct rts_task* tp);
+uint32_t rts_task_get_wcet(struct rts_task* tp);
 
 // Set the task period
 void rts_task_set_period(struct rts_task* tp, uint32_t period);
 
 // Get the task period
-uint32_t get_period(struct rts_task* tp);
+uint32_t rts_task_get_period(struct rts_task* tp);
 
 // Set the relative deadline
-void set_deadline(struct rts_task* tp, uint32_t deadline);
+void rts_task_set_deadline(struct rts_task* tp, uint32_t deadline);
 
 // Get the relative deadline
-uint32_t get_deadline(struct rts_task* tp);
+uint32_t rts_task_get_deadline(struct rts_task* tp);
 
 // Set the priority
 void set_priority(struct rts_task* tp, uint32_t priority);

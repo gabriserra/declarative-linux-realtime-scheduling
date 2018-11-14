@@ -26,7 +26,7 @@ static void get_prio_bound(struct rts_taskset* ts, enum plugin sched, uint32_t* 
     }
 }
 
-float test(struct rts_task* t, float free_budget) {    
+float test(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t, float free_budget) {    
     if(free_budget < rts_task_utilization(t))
         return 0;
     
@@ -34,6 +34,20 @@ float test(struct rts_task* t, float free_budget) {
         return 0;
         
     return 1;
+}
+
+void schedule(struct rts_task* t) {
+    struct sched_param attr;
+    
+    attr.sched_priority = t->schedprio;
+    sched_setscheduler(t->tid, SCHED_FIFO, &attr);
+}
+
+void deschedule(struct rts_task* t) {
+    struct sched_param attr;
+    
+    attr.sched_priority = 0;
+    sched_setscheduler(t->tid, SCHED_OTHER, &attr);
 }
 
 void calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t) {
@@ -49,20 +63,6 @@ void calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task*
         slope = (this->prio_max - this->prio_min) / (float)(max_prio_user - min_prio_user);
     
     t->schedprio = this->prio_min + slope * (t->priority - min_prio_user);
-}
-
-void schedule(struct rts_task* t) {
-    struct sched_param attr;
-    
-    attr.sched_priority = t->schedprio;
-    sched_setscheduler(t->tid, SCHED_FIFO, &attr);
-}
-
-void deschedule(struct rts_task* t) {
-    struct sched_param attr;
-    
-    attr.sched_priority = 0;
-    sched_setscheduler(t->tid, SCHED_OTHER, &attr);
 }
 
 void calc_budget(struct rts_plugin* this, struct rts_taskset* ts) {

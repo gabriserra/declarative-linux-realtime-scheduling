@@ -10,6 +10,7 @@ struct rts_plugin;
 struct rts_scheduler {    
     int num_of_plugin;
     float sys_rt_budget;
+    long next_rsv_id;
     struct rts_taskset* taskset;
     struct rts_plugin* plugin;
 };
@@ -20,7 +21,7 @@ void rts_scheduler_delete(struct rts_scheduler* s, pid_t pid);
 
 float rts_scheduler_remaining_budget(struct rts_scheduler* s);
 
-rsv_t rts_scheduler_rsv_create(struct rts_scheduler* s, struct rts_params* tp);
+rsv_t rts_scheduler_rsv_create(struct rts_scheduler* s, struct rts_params* tp, pid_t ppid);
 
 int rts_scheduler_rsv_attach(struct rts_scheduler* s, rsv_t rsvid, pid_t pid);
 

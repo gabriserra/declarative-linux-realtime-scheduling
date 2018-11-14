@@ -60,16 +60,20 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
     char so_name[NAME_MAX];
     
     for(int i = 0; i < num_of_plugin; i++) {
-        strcpy(so_name, "sched_");
+        strcpy(so_name, PLUGIN_PREFIX);
         strcat(so_name, PLUGIN_TO_PLUGIN_STR(plg[i].type));
         strcat(so_name, ".so");
 
         dl_ptr = dlopen(so_name, RTLD_NOW);
+        
+                char* err = dlerror();
+        printf("ERROR: %s", err);
 
         if(dl_ptr == NULL)
             return -1;
         
         plg[i].test = dlsym(dl_ptr, TEST_FUN);
+
         plg[i].schedule = dlsym(dl_ptr, SCHEDULE_FUN);
         plg[i].deschedule = dlsym(dl_ptr, DESCHEDULE_FUN);
         plg[i].calc_prio = dlsym(dl_ptr, BUDGET_FUN);

@@ -126,6 +126,21 @@ void rts_taskset_add_sorted_dl(struct rts_taskset* ts, struct rts_task* task) {
 /**
  * @internal
  *
+ * The function allocate memory and add the task in the taskset 
+ * in a sorted-way. Task with absolute deadline lower will be placed 
+ * before task with absolute deadline greater. If there is another task
+ * already in the taskset with equal deadline, the new task will be  
+ * put after.
+ * 
+ * @endinternal
+ */
+void rts_taskset_add_sorted_pr(struct rts_taskset* ts, struct rts_task* task) {
+    list_ptr_add_sorted(&(ts->tasks), (void*) task, rts_taskset_cmp_period_asc);
+}
+
+/**
+ * @internal
+ *
  * Remove the first task of the taskset and frees memory.
  * If the taskset is empty, this function does nothing.
  * 
@@ -256,6 +271,10 @@ void rts_taskset_remove_all_by_ppid(struct rts_taskset* ts, pid_t ppid) {
 
 iterator_t rts_taskset_iterator_init(struct rts_taskset* ts) {
     return iterator_init(&(ts->tasks));
+}
+
+iterator_t rts_taskset_iterator_get_next(iterator_t iterator) {
+    return iterator->next;
 }
 
 struct rts_task* rts_taskset_iterator_get_elem(iterator_t iterator) {

@@ -51,6 +51,7 @@ void* RT_task(void* argv)
         if(computation_ended(&t_activation_num_curr, t_activation_num_tot))
             break;
         
+        printf("I'm thread: %d and I will run for almost: %d\n", t_num, t_wcet);
         rts_rsv_begin(t_par);                                   // begin to consume time
         compute_for(&t_activation_time, t_wcet);                // simulate computation
         rts_rsv_end(t_par);                                     // end to consume time
@@ -68,6 +69,7 @@ void* RT_task(void* argv)
 int main(int argc, char* argv[]) 
 {
     int nthread;                /* number of thread that will be spawned */
+    float budg;
     
     rsv_t* rsv_id;              /* identifiers of the reservations, if accepted */
     pthread_t* pt_id;            /* pthread descriptors */ 
@@ -100,11 +102,17 @@ int main(int argc, char* argv[])
         exit_err("Unable to connect with the RTS daemon\n");
     }
         
-    if(!rts_cap_query(&rt_chn, RTS_BUDGET))
+    budg = rts_cap_query(&rt_chn, RTS_BUDGET);
+    if(!budg)
         exit_err("Notion of budget unsupported!");
+    
+    printf("System total budget: %f\n", budg);
 
-    if(!rts_cap_query(&rt_chn, RTS_REMAINING_BUDGET))
+    budg = rts_cap_query(&rt_chn, RTS_REMAINING_BUDGET);
+    if(!budg)
         exit_err("Remaining budget retrivial unsupported!\n");
+    
+    printf("System remaining budget: %f\n", budg);
     
     monitor_init(&m);
     
@@ -136,7 +144,7 @@ int main(int argc, char* argv[])
 // MAIN THREAD FUNCTIONS
 
 void print_usage(char* program_name) {
-    printf("Usage: %s threadnumber filename\n", program_name);
+    printf("Usage: %s thread number filename\n", program_name);
     exit(EXIT_FAILURE);
 }
 

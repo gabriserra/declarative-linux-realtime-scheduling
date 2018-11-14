@@ -2,7 +2,16 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <unistd.h>
+#include <string.h>
 #include <sys/syscall.h>
+#include <linux/unistd.h>
+#include <linux/kernel.h>
+#include <linux/types.h>
+#include <stdio.h>
+#include <errno.h>
+
+#define _GNU_SOURCE
 
 #ifdef __x86_64__
     #define __NR_sched_setattr		314
@@ -20,27 +29,31 @@
 #endif
 
 #define SCHED_DEADLINE	6
+#define MILLI_TO_NANO(var) var * 1000 * 1000
 
 struct sched_attr {
-	uint32_t size;
-	uint32_t sched_policy;
-	uint64_t sched_flags;
-	int32_t sched_nice;
-	uint32_t sched_priority;
-	uint64_t sched_runtime;
-	uint64_t sched_deadline;
-	uint64_t sched_period;
+	__u32 size;
+
+	__u32 sched_policy;
+	__u64 sched_flags;
+
+	/* SCHED_NORMAL, SCHED_BATCH */
+	__s32 sched_nice;
+
+	/* SCHED_FIFO, SCHED_RR */
+	__u32 sched_priority;
+
+	/* SCHED_DEADLINE (nsec) */
+	__u64 sched_runtime;
+	__u64 sched_deadline;
+        __u64 sched_period;
  };
- 
-void calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t) {
-    return;
-}
- 
+  
 int sched_setattr(pid_t pid, const struct sched_attr *attr, unsigned int flags) {
     return syscall(__NR_sched_setattr, pid, attr, flags);
 }
 
-float test(struct rts_taskset* ts, struct rts_task* t, float free_budget) { 
+extern float test(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t, float free_budget) { 
     int required;
     int got;
     
@@ -63,14 +76,17 @@ float test(struct rts_taskset* ts, struct rts_task* t, float free_budget) {
 int schedule(struct rts_task* t) {
     struct sched_attr attr;
     
-    memset(attr, 0, sizeof(attr));
+    memset(&attr, 0, sizeof(attr));
     attr.size = sizeof(attr);
 
     attr.sched_policy = SCHED_DEADLINE;
-    attr.sched_runtime = t->wcet;
-    attr.sched_deadline = t->deadline;
-    attr.sched_period = t->period;
-
+    attr.sched_runtime = MILLI_TO_NANO(rts_task_get_wcet(t));
+    attr.sched_deadline = MILLI_TO_NANO(rts_task_get_deadline(t));
+    attr.sched_period = MILLI_TO_NANO(rts_task_get_period(t));
+    attr.sched_flags = 0;
+    attr.sched_nice = 0;
+    attr.sched_priority = 0;
+    
     return sched_setattr(t->tid, &attr, 0);
 }
 
@@ -81,12 +97,18 @@ int deschedule(struct rts_task* t) {
     return sched_setscheduler(t->tid, SCHED_OTHER, &attr);
 }
 
+void calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t) {
+    return;
+}
+
 void calc_budget(struct rts_plugin* this, struct rts_taskset* ts) {
-    node_ptr* iterator;
+    iterator_t iterator;
     struct rts_task* t;
     
-    for(iterator = ts->tasks->root; iterator != NULL; iterator = iterator->next) {
-        t = (struct rts_task*)iterator->elem;
+    iterator = rts_taskset_iterator_init(ts);
+    
+    for(; iterator != NULL; iterator = rts_taskset_iterator_get_next(iterator)) {
+        t = rts_taskset_iterator_get_elem(iterator);
         
         if(t->plugin == this->type)
             this->used_budget += rts_task_utilization(t);

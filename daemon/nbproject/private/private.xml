@@ -10,9 +10,20 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/daemon.c</file>
             <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_daemon.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/plugin/sched_RR.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/plugin/sched_EDF.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/components/list_ptr.h</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_plugin.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_task.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_task.h</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_plugin.h</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/plugin/sched_SSRM.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_taskset.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/plugin/makefile</file>
             <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/components/list_int.c</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_scheduler.h</file>
+            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_scheduler.c</file>
         </group>
     </open-files>
 </project-private>

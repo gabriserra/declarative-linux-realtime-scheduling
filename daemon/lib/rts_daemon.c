@@ -38,11 +38,11 @@ static struct rts_reply req_cap_query(struct rts_daemon* data, enum QUERY_TYPE t
     return rep;
 }
 
-static struct rts_reply req_rsv_create(struct rts_daemon* data, struct rts_params* p) {
+static struct rts_reply req_rsv_create(struct rts_daemon* data, struct rts_params* p, pid_t ppid) {
     int rsv_id;
     struct rts_reply rep;
     
-    rsv_id = rts_scheduler_rsv_create(&(data->sched), p);
+    rsv_id = rts_scheduler_rsv_create(&(data->sched), p, ppid);
             
     if(rsv_id < 0) {
         rep.rep_type = RTS_RSV_CREATE_ERR;
@@ -173,7 +173,9 @@ void rts_daemon_handle_req(struct rts_daemon* data, int cli_id) {
 int rts_daemon_process_req(struct rts_daemon* data, int cli_id) {
     struct rts_reply rep;
     struct rts_request req;
+    struct rts_client* client;
     
+    client = rts_carrier_get_client(&(data->chann), cli_id);
     req = rts_carrier_get_req(&(data->chann), cli_id);
     
     switch(req.req_type) {
@@ -184,10 +186,11 @@ int rts_daemon_process_req(struct rts_daemon* data, int cli_id) {
             rep = req_cap_query(data, req.payload.query_type);
             break;
         case RTS_RSV_CREATE:
-            rep = req_rsv_create(data, &(req.payload.param));
+            rep = req_rsv_create(data, &(req.payload.param), client->pid);
             break;
         case RTS_RSV_ATTACH:
             rep = req_rsv_attach(data, req.payload.ids.rsvid, req.payload.ids.pid);
+            break;
         case RTS_RSV_DETACH:
             rep = req_rsv_detach(data, req.payload.ids.rsvid);
             break;

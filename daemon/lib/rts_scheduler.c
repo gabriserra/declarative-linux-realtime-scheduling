@@ -30,8 +30,8 @@ static int rts_scheduler_assign(struct rts_scheduler* s, struct rts_task* t) {
     free_budget = s->sys_rt_budget;
     
     // test each plugin
-    for(curr_plg = 1; curr_plg < s->num_of_plugin; curr_plg++) {
-        curr_test_result = s->plugin[curr_plg].test(t, free_budget);
+    for(curr_plg = 0; curr_plg < s->num_of_plugin; curr_plg++) {
+        curr_test_result = s->plugin[curr_plg].test(&(s->plugin[curr_plg]), s->taskset, t, free_budget);
         
         if(curr_test_result > best_test_result) {
             best_test_result = curr_test_result;
@@ -47,6 +47,8 @@ static int rts_scheduler_assign(struct rts_scheduler* s, struct rts_task* t) {
     
     // choose best one
     t->plugin = s->plugin[best_plg].type;
+    rts_taskset_add_top(s->taskset, t);
+    
     s->plugin[best_plg].calc_prio(&(s->plugin[best_plg]), s->taskset, t);
     s->plugin[best_plg].calc_budget(&(s->plugin[best_plg]), s->taskset);
     
@@ -56,7 +58,7 @@ static int rts_scheduler_assign(struct rts_scheduler* s, struct rts_task* t) {
 static int rts_scheduler_schedule(struct rts_scheduler* s, struct rts_task* t) {
     for(int i = 0; i < s->num_of_plugin; i++)
         if(s->plugin[i].type == t->plugin)
-            return s->plugin[i].schedule(&(s->plugin[i]), t);
+            return s->plugin[i].schedule(t);
     
     return -1;
 }
@@ -64,7 +66,7 @@ static int rts_scheduler_schedule(struct rts_scheduler* s, struct rts_task* t) {
 static int rts_scheduler_deschedule(struct rts_scheduler* s, struct rts_task* t) {
     for(int i = 0; i < s->num_of_plugin; i++)
         if(s->plugin[i].type == t->plugin)
-            return s->plugin[i].deschedule(&(s->plugin[i]), t);
+            return s->plugin[i].deschedule(t);
     
     return -1;
 }
@@ -74,6 +76,7 @@ static int rts_scheduler_deschedule(struct rts_scheduler* s, struct rts_task* t)
 void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, float sys_rt_budget) {
     s->sys_rt_budget = sys_rt_budget;
     s->taskset = ts;
+    s->next_rsv_id = 0;
     rts_plugins_init(&(s->plugin), &(s->num_of_plugin));
 }
 
@@ -103,24 +106,25 @@ float rts_scheduler_remaining_budget(struct rts_scheduler* s) {
     return free_budget;
 }
 
-rsv_t rts_scheduler_rsv_create(struct rts_scheduler* s, struct rts_params* tp) {
-    static rsv_t rsv_id = 0;
+rsv_t rts_scheduler_rsv_create(struct rts_scheduler* s, struct rts_params* tp, pid_t ppid) {
     struct rts_task* t;
     
     rts_task_init(&t, 0, tp->clk);
     
-    t->id = rsv_id;
+    t->id = ++s->next_rsv_id;
+    t->ptid = ppid;
     t->period = tp->period;
     t->wcet = tp->budget;
     t->deadline = tp->deadline;
     t->priority = tp->priority;
+    t->est_param = tp->estimatedp;
     
     if(rts_scheduler_mem_attach(&(t->est_param)) < 0)
         return -1;
     if(rts_scheduler_assign(s, t) < 0)
         return -1;
         
-    return rsv_id;
+    return s->next_rsv_id;
 }
 
 int rts_scheduler_rsv_attach(struct rts_scheduler* s, rsv_t rsvid, pid_t pid) {

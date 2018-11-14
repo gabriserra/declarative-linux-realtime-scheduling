@@ -90,6 +90,8 @@ void rts_taskset_add_top(struct rts_taskset* ts, struct rts_task* task);
  */
 void rts_taskset_add_sorted_dl(struct rts_taskset* ts, struct rts_task* task);
 
+void rts_taskset_add_sorted_pr(struct rts_taskset* ts, struct rts_task* task);
+
 /**
  * @brief Remove the top element of the taskset
  * 
@@ -169,6 +171,8 @@ struct rts_task* rts_taskset_remove_by_ppid(struct rts_taskset* ts, pid_t ppid);
 struct rts_task* rts_taskset_remove_by_rsvid(struct rts_taskset* ts, rsv_t rsvid);
 
 iterator_t rts_taskset_iterator_init(struct rts_taskset* ts);
+
+iterator_t rts_taskset_iterator_get_next(iterator_t iterator);
 
 struct rts_task* rts_taskset_iterator_get_elem(iterator_t iterator);
 

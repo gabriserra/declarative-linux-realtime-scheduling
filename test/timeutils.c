@@ -74,7 +74,7 @@ void compute_for(struct timespec* t_init, uint32_t exec_milli_max) {
     struct timespec t_curr;
     struct timespec t_end;
     
-    exec_milli = rand() % exec_milli_max;
+    exec_milli = rand() % exec_milli_max; 
     time_copy(&t_end, t_init);
     time_add_ms(&t_end, exec_milli);
     
