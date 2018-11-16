@@ -1,6 +1,5 @@
 #include "rts_utils.h"
 #include <stdlib.h>
-#include <stdio.h>
 
 void time_add_us(struct timespec *t, uint64_t us) {
     t->tv_sec += MICRO_TO_SEC(us);               
@@ -87,21 +86,39 @@ uint32_t get_time_now_ms(clockid_t clk) {
     return timespec_to_ms(&ts);
 }
 
-float read_rt_kernel_budget() {
-    int rt_period, rt_runtime;
-    FILE* proc_rt_period = fopen(PROC_RT_PERIOD_FILE, "r");
-    FILE* proc_rt_runtime = fopen(PROC_RT_RUNTIME_FILE, "r");
-
-    if(proc_rt_period == NULL || proc_rt_runtime == NULL) {
-        printf("Error during proc file open ...\n");
-        exit(EXIT_FAILURE);
-    }
-
-    fscanf(proc_rt_period, "%d", &rt_period);
-    fscanf(proc_rt_runtime, "%d", &rt_runtime);
-
-    if(rt_runtime == -1)
-        return 1;
+struct timespec get_thread_time() {
+    struct timespec ts;
     
-    return ((float)rt_runtime) / ((float)rt_period);
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+    return ts;
+}
+
+uint32_t get_thread_time_ms() {
+    struct timespec ts;
+    
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &ts);
+    return timespec_to_ms(&ts);
+}
+
+void compute_for(struct timespec* t_act, uint32_t exec_milli_max) {
+    uint32_t exec_milli;
+    struct timespec t_curr;
+    struct timespec t_end;
+    
+    exec_milli = rand() % exec_milli_max; 
+    time_copy(&t_end, t_act);
+    time_add_ms(&t_end, exec_milli);
+    
+    while(1) {
+        __asm__ ("nop"); // simulate computation of something..
+        clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t_curr);
+        
+        if(time_cmp(&t_curr, &t_end) > 0)
+            break;
+    } 
+}
+
+void wait_next_activation(struct timespec* t_act, uint32_t period_milli) {
+    time_add_ms(t_act, period_milli);
+    clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, t_act, NULL);
 }

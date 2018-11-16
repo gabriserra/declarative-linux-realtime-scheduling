@@ -6,6 +6,18 @@
 
 #define REACTIVITY 0.5
 
+#define DEADLINE_TO_PERIOD(dl) dl * 2
+#define WCET_TO_PERIOD(wcet) wcet * 3
+
+struct rts_thread {
+    uint32_t t_num;
+    uint32_t t_period;
+    uint32_t t_wcet;
+    uint32_t t_activation_num_tot;
+    uint32_t t_activation_num_curr;
+    struct timespec t_activation_time;
+};
+
 int rts_daemon_connect(struct rts_access* c);
 
 float rts_cap_query(struct rts_access* c, enum QUERY_TYPE type);
@@ -26,6 +38,8 @@ void rts_set_priority(struct rts_params* tp, uint32_t priority);
 
 void rts_params_cleanup(struct rts_params* tp);
 
+uint64_t rts_params_get_est_param(struct rts_params* tp, int FLAG);
+
 int rts_create_rsv(struct rts_access* c, struct rts_params* tp, rsv_t* id);
 
 int rts_rsv_attach_thread(struct rts_access* c, rsv_t id, pid_t pid);
@@ -41,6 +55,28 @@ int rts_daemon_deconnect(struct rts_access* c);
 void rts_rsv_begin(struct rts_params* tp);
 
 void rts_rsv_end(struct rts_params* tp);
+
+void rts_thread_init(struct rts_thread* t, struct rts_params* p);
+
+void rts_thread_compute(struct rts_thread* t);
+
+void rts_thread_wait_activation(struct rts_thread* t);
+
+void rts_thread_calc_exec(struct rts_thread* t, int cfg_budg, int cfg_per, int cfg_dead);
+
+void rts_thread_calc_period(struct rts_thread* t, int cfg_budg, int cfg_per, int cfg_dead);
+
+void rts_thread_rand_activation_num(struct rts_thread* t);
+
+void rts_thread_set_activation_num(struct rts_thread* t, int curr, int tot);
+
+int rts_thread_computation_ended(struct rts_thread* t);
+
+void rts_thread_print_info(struct rts_thread* t, int tid);
+
+float rts_thread_calc_budget(struct rts_thread* t, struct rts_params* p);
+
+float rts_thread_calc_rem_budget(struct rts_thread* t, struct rts_params* p);
 
 #endif	// RTS_LIB_H
 

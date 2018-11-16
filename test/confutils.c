@@ -27,7 +27,7 @@ void conf_threads(char* filename, int nthread, struct rts_params* p) {
     for(int i = 0; i < nthread; i++) {
         rts_params_init(&(p[i]));
         
-        rts_set_clock(&(p[i]), CLOCK_MONOTONIC);
+        rts_set_clock(&(p[i]), THREAD_CLK);
         
         fscanf(f, "%d", &priority);
         if(priority != 0)
@@ -63,28 +63,3 @@ void fill_params(struct thread_params* t_par, int num, struct rts_params* par) {
     t_par->par = par;
 }
 
-uint32_t calc_exec(int cfg_budg, int cfg_per, int cfg_dead) {
-    if(cfg_budg != 0)
-        return cfg_budg;
-    else if(cfg_dead != 0)
-        return cfg_dead;
-    else if(cfg_per != 0)
-        return cfg_per;
-    else
-        return rand();
-}
-
-uint32_t calc_period(int cfg_budg, int cfg_per, int cfg_dead) {
-    if(cfg_per != 0)
-        return cfg_per;
-    else if(cfg_dead != 0)
-        return DEADLINE_TO_PERIOD(cfg_dead);
-    else if(cfg_budg != 0)
-        return WCET_TO_PERIOD(cfg_budg);
-    else
-        return rand();   
-}
-
-uint32_t calc_activation_num() {
-    return rand();
-}

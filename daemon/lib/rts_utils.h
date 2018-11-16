@@ -1,5 +1,6 @@
-#define PROC_RT_PERIOD_FILE "/proc/sys/kernel/sched_rt_period_us"
-#define PROC_RT_RUNTIME_FILE "/proc/sys/kernel/sched_rt_runtime_us"
+
+#ifndef RTS_UTILS_H
+#define RTS_UTILS_H
 
 #include <time.h>
 #include <stdint.h>
@@ -48,4 +49,13 @@ void get_time_now2(clockid_t clk, struct timespec* t);
 
 uint32_t get_time_now_ms(clockid_t clk);
 
-float read_rt_kernel_budget();
+struct timespec get_thread_time();
+
+uint32_t get_thread_time_ms();
+
+void compute_for(struct timespec* t_act, uint32_t exec_milli_max);
+
+void wait_next_activation(struct timespec* t_act, uint32_t period_milli);
+
+#endif	// RTS_UTILS_H
+

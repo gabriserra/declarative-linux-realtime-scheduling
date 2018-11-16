@@ -18,10 +18,7 @@
 #include <stdint.h>
 
 #define COLUMN_MAX  80      // used to par
-#define DEADLINE_TO_PERIOD(dl) dl * 2
-#define WCET_TO_PERIOD(wcet) wcet * 3
-
-#define THREAD_CLK CLOCK_MONOTONIC
+#define THREAD_CLK CLOCK_MONOTONIC_RAW
 
 // DATA STRUCT
 
@@ -35,12 +32,6 @@ void conf_threads(char* filename, int nthread, struct rts_params* p);
 void skip_comment(FILE* f);
 
 void fill_params(struct thread_params* t_par, int num, struct rts_params* rt_par);
-
-uint32_t calc_exec(int cfg_budg, int cfg_per, int cfg_dead);
-
-uint32_t calc_period(int cfg_budg, int cfg_per, int cfg_dead);
-
-uint32_t calc_activation_num();
 
 #endif /* THREADCONFUTILS_H */
 

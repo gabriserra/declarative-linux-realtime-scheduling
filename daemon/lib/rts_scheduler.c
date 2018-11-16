@@ -1,6 +1,9 @@
 #include "rts_scheduler.h"
 #include "rts_taskset.h"
 #include "rts_plugin.h"
+#include <sys/sysinfo.h>
+#include <stdlib.h>
+#include <string.h>
 
 static int rts_scheduler_mem_attach(struct shatomic* mem) {
     key_t key = shatomic_getkey(mem);
@@ -20,61 +23,68 @@ static void rts_scheduler_mem_detach(struct shatomic* mem) {
     shatomic_detach(mem);
 }
 
+static void rts_scheduler_add_utils(struct rts_scheduler* s, struct rts_task* t) {
+    s->sys_rt_curr_free_utils[t->cpu] -= rts_task_utilization(t);
+}
+
+static void rts_scheduler_remove_utils(struct rts_scheduler* s, struct rts_task* t) {
+    s->sys_rt_curr_free_utils[t->cpu] += rts_task_utilization(t);
+}
+
 static int rts_scheduler_assign(struct rts_scheduler* s, struct rts_task* t) {
-    float free_budget;
-    int best_plg, curr_plg;
-    float best_test_result, curr_test_result;
+    int best_cpu;
+    int best_plg;
+    int curr_plg;
+    float best_test;
+    float curr_test;
     
     best_plg = -1;
-    best_test_result = 0;
-    free_budget = s->sys_rt_budget;
+    best_test = 0;
     
-    // test each plugin
     for(curr_plg = 0; curr_plg < s->num_of_plugin; curr_plg++) {
-        curr_test_result = s->plugin[curr_plg].test(&(s->plugin[curr_plg]), s->taskset, t, free_budget);
         
-        if(curr_test_result > best_test_result) {
-            best_test_result = curr_test_result;
+        curr_test = s->plugin[curr_plg].t_test(&(s->plugin[curr_plg]), 
+                    s->taskset, t, s->sys_rt_curr_free_utils);
+        
+        if(curr_test > best_test) {
+            best_test = curr_test;
             best_plg = curr_plg;
+            best_cpu = t->cpu;
         }
         
-        free_budget -= s->plugin[curr_plg].used_budget;
     }
     
-    // check if it is schedulable
     if(best_plg == -1)
         return -1;
     
-    // choose best one
-    t->plugin = s->plugin[best_plg].type;
+    t->cpu = best_cpu;
+    t->pluginid = best_plg;
     rts_taskset_add_top(s->taskset, t);
     
-    s->plugin[best_plg].calc_prio(&(s->plugin[best_plg]), s->taskset, t);
-    s->plugin[best_plg].calc_budget(&(s->plugin[best_plg]), s->taskset);
+    s->plugin[best_plg].t_calc_prio(&(s->plugin[best_plg]), s->taskset, t);
+    s->plugin[best_plg].t_add_to_utils(&(s->plugin[best_plg]), t);
+    
+    rts_scheduler_add_utils(s, t);
     
     return 0;
 }
 
 static int rts_scheduler_schedule(struct rts_scheduler* s, struct rts_task* t) {
-    for(int i = 0; i < s->num_of_plugin; i++)
-        if(s->plugin[i].type == t->plugin)
-            return s->plugin[i].schedule(t);
-    
-    return -1;
+    return s->plugin[t->pluginid].t_schedule(t);
 }
 
 static int rts_scheduler_deschedule(struct rts_scheduler* s, struct rts_task* t) {
-    for(int i = 0; i < s->num_of_plugin; i++)
-        if(s->plugin[i].type == t->plugin)
-            return s->plugin[i].deschedule(t);
-    
-    return -1;
+    return s->plugin[t->pluginid].t_deschedule(t);
 }
 
 // PUBLIC
 
-void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, float sys_rt_budget) {
-    s->sys_rt_budget = sys_rt_budget;
+void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, float sys_rt_free_util) {
+    s->num_of_cpu = get_nprocs();
+    s->sys_rt_free_utils = calloc(s->num_of_cpu, sizeof(float));
+    s->sys_rt_curr_free_utils = calloc(s->num_of_cpu, sizeof(float));
+    memset(s->sys_rt_free_utils, sys_rt_free_util, sizeof(float) * s->num_of_cpu);
+    memset(s->sys_rt_curr_free_utils, sys_rt_free_util, sizeof(float) * s->num_of_cpu);
     s->taskset = ts;
     s->next_rsv_id = 0;
     rts_plugins_init(&(s->plugin), &(s->num_of_plugin));
@@ -89,21 +99,21 @@ void rts_scheduler_delete(struct rts_scheduler* s, pid_t ppid) {
         if(t == NULL)
             break;
         
+        rts_scheduler_remove_utils(s, t);
+        s->plugin[t->pluginid].t_remove_from_utils(&(s->plugin[t->pluginid]), t);
+        
         rts_scheduler_mem_detach(&(t->est_param));
         rts_task_destroy(t);
     }
-   
-    for(int i = 0; i < s->num_of_plugin; i++)
-        s->plugin[i].calc_budget(&(s->plugin[i]), s->taskset);
 }
 
 float rts_scheduler_remaining_budget(struct rts_scheduler* s) {
-    float free_budget = s->sys_rt_budget;
+    float free_budget = 0;
     
-    for(int i = 0; i < s->num_of_plugin; i++)
-        free_budget -= s->plugin[i].used_budget;
+    for(int i = 0; i < s->num_of_cpu; i++)
+        free_budget += s->sys_rt_free_utils[i];
     
-    return free_budget;
+    return free_budget / s->num_of_cpu;
 }
 
 rsv_t rts_scheduler_rsv_create(struct rts_scheduler* s, struct rts_params* tp, pid_t ppid) {
@@ -171,7 +181,7 @@ float rts_scheduler_rsv_budget(struct rts_scheduler* s, rsv_t rsvid) {
         t = rts_taskset_iterator_get_elem(iterator);
         
         if(t->id == rsvid)
-            return rts_task_calc_budget(t);
+            return 0; // TO BE IMPLEMENTED
     } 
         
     return -1;
@@ -187,7 +197,7 @@ float rts_scheduler_rsv_rem_budget(struct rts_scheduler* s, rsv_t rsvid) {
         t = rts_taskset_iterator_get_elem(iterator);
         
         if(t->id == rsvid)
-            return rts_task_calc_rem_budget(t);
+            return 0; // TO BE IMPLEMENTED
     } 
         
     return -1;
@@ -201,11 +211,11 @@ int rts_scheduler_rsv_destroy(struct rts_scheduler* s, rsv_t rsvid) {
     if(t == NULL)
         return -1;
     
+    rts_scheduler_remove_utils(s, t);
+    s->plugin[t->pluginid].t_remove_from_utils(&(s->plugin[t->pluginid]), t);
+    
     rts_scheduler_mem_detach(&(t->est_param));
     rts_task_destroy(t);
-    
-    for(int i = 0; i < s->num_of_plugin; i++)
-        s->plugin[i].calc_budget(&(s->plugin[i]), s->taskset);
-    
+        
     return 0;
 }

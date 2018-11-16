@@ -18,6 +18,9 @@
 #include "rts_channel.h"
 #include "rts_scheduler.h"
 
+#define PROC_RT_PERIOD_FILE "/proc/sys/kernel/sched_rt_period_us"
+#define PROC_RT_RUNTIME_FILE "/proc/sys/kernel/sched_rt_runtime_us"
+
 struct rts_daemon {
     struct rts_carrier chann;
     struct rts_scheduler sched;

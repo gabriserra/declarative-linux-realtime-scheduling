@@ -9,8 +9,10 @@ struct rts_plugin;
 
 struct rts_scheduler {    
     int num_of_plugin;
-    float sys_rt_budget;
+    int num_of_cpu;
     long next_rsv_id;
+    float* sys_rt_free_utils;
+    float* sys_rt_curr_free_utils;
     struct rts_taskset* taskset;
     struct rts_plugin* plugin;
 };

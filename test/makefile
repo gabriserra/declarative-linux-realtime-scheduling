@@ -18,7 +18,7 @@ CMP_PATH =  ../daemon/components
 #---------------------------------------------------
 # Options passed to the compiler
 #---------------------------------------------------
-CFLAGS = -Wall -std=gnu99 -I$(LIB_PATH) -g -O0
+CFLAGS = -Wall -std=gnu99 -I$(LIB_PATH) -Wno-unused-result -g -O0 
 
 #---------------------------------------------------
 # Modules loaded
@@ -40,9 +40,8 @@ endif
 
 UTILS_CONF = confutils.o
 UTILS_MEM = memutils.o
-UTILS_TIME = timeutils.o
 
-UTILS_O = $(UTILS_CONF) $(UTILS_MEM) $(UTILS_TIME)
+UTILS_O = $(UTILS_CONF) $(UTILS_MEM)
 		
 #--------------------------------------------------- 
 # Compile and create objects
@@ -50,14 +49,17 @@ UTILS_O = $(UTILS_CONF) $(UTILS_MEM) $(UTILS_TIME)
 
 all: $(TEST)
 
-$(TEST): $(CMP_PATH)/usocket.o $(CMP_PATH)/shatomic.o $(PRV_PATH)/rts_channel.o $(LIB_PATH)/rts_lib.o $(UTILS_O) $(TEST).o  
-	$(CC) -o $(TEST) $(CFLAGS) $(CMP_PATH)/usocket.o $(CMP_PATH)/shatomic.o $(PRV_PATH)/rts_channel.o $(LIB_PATH)/rts_lib.o $(UTILS_O) $(TEST).o  $(LDFLAGS)
+$(TEST): $(CMP_PATH)/usocket.o $(CMP_PATH)/shatomic.o $(PRV_PATH)/rts_utils.o $(PRV_PATH)/rts_channel.o $(LIB_PATH)/rts_lib.o $(UTILS_O) $(TEST).o  
+	$(CC) -o $(TEST) $(CFLAGS) $(CMP_PATH)/usocket.o $(CMP_PATH)/shatomic.o $(PRV_PATH)/rts_utils.o $(PRV_PATH)/rts_channel.o $(LIB_PATH)/rts_lib.o $(UTILS_O) $(TEST).o  $(LDFLAGS)
 
 $(LIB_PATH)/rts_lib.o:  $(LIB_PATH)/rts_lib.c
 	$(CC) -c $(CFLAGS) $(LIB_PATH)/rts_lib.c -o $(LIB_PATH)/rts_lib.o
 
 $(PRV_PATH)/rts_channel.o :
 	$(CC) -c $(CFLAGS) $(PRV_PATH)/rts_channel.c -o $(PRV_PATH)/rts_channel.o
+	
+$(PRV_PATH)/rts_utils.o :
+	$(CC) -c $(CFLAGS) $(PRV_PATH)/rts_utils.c -o $(PRV_PATH)/rts_utils.o
 	
 $(CMP_PATH)/shatomic.o :
 	$(CC) -c $(CFLAGS) $(CMP_PATH)/shatomic.c -o $(CMP_PATH)/shatomic.o
@@ -70,10 +72,7 @@ confutils.o: confutils.c
 	
 memutils.o: memutils.c
 	$(CC) -c $(CFLAGS) memutils.c
-	
-timeutils.o: timeutils.c
-	$(CC) -lrt -c $(CFLAGS) timeutils.c
-		
+			
 $(TEST).o: $(TEST).c 
 	$(CC) -c $(CFLAGS) $(TEST).c
 	

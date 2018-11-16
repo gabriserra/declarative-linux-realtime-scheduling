@@ -19,11 +19,15 @@
 #define PLUGIN_CFG "plugin/schedconfig.cfg"
 #define PLUGIN_PREFIX "plugin/sched_"
 
-#define TEST_FUN "test"
-#define SCHEDULE_FUN "schedule"
-#define DESCHEDULE_FUN "deschedule"
-#define BUDGET_FUN "calc_budget"
-#define PRIO_FUN "calc_prio"
+#define TS_RECALC_UTILS_FUN "ts_recalc_utils"
+#define TS_RECALC_PRIO_FUN "ts_recalc_prio"
+
+#define T_SCHEDULE_FUN "t_schedule"
+#define T_DESCHEDULE_FUN "t_deschedule"
+#define T_ADD_TO_UTILS_FUN "t_add_to_utils"
+#define T_REMOVE_FROM_UTILS_FUN "t_remove_from_utils"
+#define T_CALC_PRIO_FUN "t_calc_prio"
+#define T_TEST_FUN "t_test"
 
 enum plugin {
     NONE,
@@ -51,17 +55,26 @@ struct rts_taskset;
 struct rts_plugin {
     int prio_min;
     int prio_max;
-    enum plugin type;
-    float used_budget;
+    int pluginid;
     
-    float (*test)(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t, float free_budget);
-    int (*schedule)(struct rts_task* t);
-    int (*deschedule)(struct rts_task* t);
-    void (*calc_prio) (struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t);
-    void (*calc_budget)(struct rts_plugin* this, struct rts_taskset* ts);
+    int cpunum;
+    float* util_used_percpu;
+    
+    enum plugin type;
+    
+    void (*ts_recalc_utils)(struct rts_plugin* this, struct rts_taskset* ts);
+    void (*ts_recalc_prio)(struct rts_plugin* this, struct rts_taskset* ts);
+    
+    int (*t_schedule)(struct rts_task* t);
+    int (*t_deschedule)(struct rts_task* t);
+    void (*t_add_to_utils)(struct rts_plugin* this, struct rts_task* t);
+    void (*t_remove_from_utils)(struct rts_plugin* this, struct rts_task* t);
+    void (*t_calc_prio) (struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t);
+    float (*t_test)(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t, float* free_utils);
+
 };
 
-int rts_plugins_init(struct rts_plugin** plg, int* num);
+int rts_plugins_init(struct rts_plugin** plg, int* plgnum);
 
 enum plugin get_plugin_from_str(char* str);
 

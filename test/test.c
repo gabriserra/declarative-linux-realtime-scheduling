@@ -2,7 +2,6 @@
 
 #include "test.h"
 #include "confutils.h"
-#include "timeutils.h"
 #include "memutils.h"
 #include "../lib/rts_lib.h"
 #include <pthread.h>
@@ -25,37 +24,31 @@ struct monitor m;
  */
 
 void* RT_task(void* argv) 
-{
+{  
     int t_num;
-    int t_period;
-    int t_wcet;
-    int t_activation_num_tot;
-    int t_activation_num_curr;
     
+    struct rts_thread t;
     struct rts_params* t_par;
-    struct timespec t_activation_time;
-        
+            
     t_num = ((struct thread_params*) argv)->num;
     t_par = ((struct thread_params*) argv)->par;
-    t_wcet = calc_exec(t_par->budget, t_par->period, t_par->deadline);
-    t_period = calc_period(t_par->budget, t_par->period, t_par->deadline);
-    t_activation_num_tot = calc_activation_num();
-    t_activation_num_curr = 0;
-    t_activation_time = get_time_now(rts_get_clock(t_par));
     
+    rts_thread_init(&t, t_par);
+    rts_thread_rand_activation_num(&t);
+ 
     copy_and_signal(&m, &(t_ids[t_num]), gettid());
         
     // thread loop
     while(1) 
     {
-        if(computation_ended(&t_activation_num_curr, t_activation_num_tot))
+        if(rts_thread_computation_ended(&t))
             break;
         
-        printf("I'm thread: %d and I will run for almost: %d\n", t_num, t_wcet);
-        rts_rsv_begin(t_par);                                   // begin to consume time
-        compute_for(&t_activation_time, t_wcet);                // simulate computation
-        rts_rsv_end(t_par);                                     // end to consume time
-        wait_next_activation(&t_activation_time, t_period);     // sleep until next activation
+        rts_thread_print_info(&t, t_num);
+        rts_rsv_begin(t_par);                           // begin to consume time
+        rts_thread_compute(&t);                         // simulate computation
+        rts_rsv_end(t_par);                             // end to consume time
+        rts_thread_wait_activation(&t);                 // sleep until next activation
     }
 
     return NULL;
@@ -69,7 +62,6 @@ void* RT_task(void* argv)
 int main(int argc, char* argv[]) 
 {
     int nthread;                /* number of thread that will be spawned */
-    float budg;
     
     rsv_t* rsv_id;              /* identifiers of the reservations, if accepted */
     pthread_t* pt_id;            /* pthread descriptors */ 
@@ -85,7 +77,7 @@ int main(int argc, char* argv[])
     char argvv[10];
     char argvvv[50];
     
-    strcpy(argvv, "2");
+    strcpy(argvv, "4");
     strcpy(argvvv, "threads.cfg");
     
     nthread = atoi(argvv);
@@ -97,22 +89,11 @@ int main(int argc, char* argv[])
     
     conf_threads(argvvv, nthread, rt_par);
             
-    if(rts_daemon_connect(&rt_chn) != RTS_OK) {
-        printf("ERRORE: %s\n", strerror(errno));
+    if(rts_daemon_connect(&rt_chn) != RTS_OK)
         exit_err("Unable to connect with the RTS daemon\n");
-    }
-        
-    budg = rts_cap_query(&rt_chn, RTS_BUDGET);
-    if(!budg)
-        exit_err("Notion of budget unsupported!");
     
-    printf("System total budget: %f\n", budg);
-
-    budg = rts_cap_query(&rt_chn, RTS_REMAINING_BUDGET);
-    if(!budg)
-        exit_err("Remaining budget retrivial unsupported!\n");
-    
-    printf("System remaining budget: %f\n", budg);
+    printf("System total budget: %f\n", rts_cap_query(&rt_chn, RTS_BUDGET));    
+    printf("System remaining budget: %f\n", rts_cap_query(&rt_chn, RTS_REMAINING_BUDGET));
     
     monitor_init(&m);
     

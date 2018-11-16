@@ -29,13 +29,14 @@ struct rts_task {
     pid_t               ptid;		// parent tid
     pid_t               tid;		// thread/process id
     clockid_t           clk;            // type of clock to be used [REALTIME, MONOTONIC, ...]
+    uint32_t            cpu;
     uint32_t		wcet;		// worst case ex time [microseconds]
     uint32_t 		period;		// period of task [millisecond]
     uint32_t 		deadline;	// relative deadline [millisecond]
     uint32_t 		priority;	// user priority of task 
     uint32_t            schedprio;      // scheduling real prio [LOW_PRIO, HIGH_PRIO] 
     uint32_t 		dmiss;		// num of deadline misses
-    enum plugin         plugin;         // if != NONE -> the scheduling alg
+    int                 pluginid;         // if != NONE -> the scheduling alg
     struct shatomic     est_param;      // nactivation, wcet, period
 };
 

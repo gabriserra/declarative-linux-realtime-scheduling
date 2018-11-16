@@ -29,7 +29,6 @@
       <in>confutils.c</in>
       <in>memutils.c</in>
       <in>test.c</in>
-      <in>timeutils.c</in>
     </df>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -105,10 +104,6 @@
         </cTool>
       </item>
       <item path="test.c" ex="false" tool="0" flavor2="3">
-        <cTool flags="0">
-        </cTool>
-      </item>
-      <item path="timeutils.c" ex="false" tool="0" flavor2="3">
         <cTool flags="0">
         </cTool>
       </item>

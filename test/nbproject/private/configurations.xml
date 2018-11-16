@@ -8,8 +8,6 @@
       <in>memutils.h</in>
       <in>test.c</in>
       <in>test.h</in>
-      <in>timeutils.c</in>
-      <in>timeutils.h</in>
     </df>
   </logicalFolder>
   <projectmakefile>makefile</projectmakefile>

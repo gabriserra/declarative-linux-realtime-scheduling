@@ -76,6 +76,7 @@ uint32_t rts_task_get_deadline(struct rts_task* tp) {
     
     period = tp->deadline != 0 ? tp->deadline : tp->period;
     period = period != 0 ? period : rts_task_get_est_param(tp, EST_PERIOD);
+    
     return period;
 }
 

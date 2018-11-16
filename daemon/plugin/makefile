@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS= -Wall -O -fPIC -Wno-unused-result
+CFLAGS= -Wall -O -fPIC -Wno-unused-result -std=gnu99
 DEBUG = -g -O0
 
 LIB_PATH = ../lib

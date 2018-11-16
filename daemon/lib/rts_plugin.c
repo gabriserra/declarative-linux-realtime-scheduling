@@ -3,7 +3,7 @@
 #include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <sys/sysinfo.h>
 
 static const char *plugin_str[] = {
     "NONE",
@@ -52,12 +52,14 @@ static void read_conf(FILE* f, struct rts_plugin* plg) {
         fscanf(f, "%s", buffer);
         fscanf(f, "%d%*[-/]%d", &(plg[imp].prio_min), &(plg[imp].prio_max));
         plg[imp].type = get_plugin_from_str(buffer);
+        plg[imp].pluginid = imp;
     }
 }
 
 static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
     void* dl_ptr;
     char so_name[NAME_MAX];
+    int cpunum = get_nprocs();
     
     for(int i = 0; i < num_of_plugin; i++) {
         strcpy(so_name, PLUGIN_PREFIX);
@@ -66,24 +68,27 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
 
         dl_ptr = dlopen(so_name, RTLD_NOW);
         
-                char* err = dlerror();
-        printf("ERROR: %s", err);
-
         if(dl_ptr == NULL)
             return -1;
         
-        plg[i].test = dlsym(dl_ptr, TEST_FUN);
-
-        plg[i].schedule = dlsym(dl_ptr, SCHEDULE_FUN);
-        plg[i].deschedule = dlsym(dl_ptr, DESCHEDULE_FUN);
-        plg[i].calc_prio = dlsym(dl_ptr, BUDGET_FUN);
-        plg[i].calc_budget = dlsym(dl_ptr, PRIO_FUN);
+        plg[i].cpunum = cpunum;
+        plg[i].util_used_percpu = calloc(cpunum, sizeof(float));
+        plg[i].pluginid = i;
+        
+        plg[i].ts_recalc_utils = dlsym(dl_ptr, TS_RECALC_UTILS_FUN);
+        plg[i].ts_recalc_prio = dlsym(dl_ptr, TS_RECALC_PRIO_FUN);
+        plg[i].t_schedule = dlsym(dl_ptr, T_SCHEDULE_FUN);
+        plg[i].t_deschedule = dlsym(dl_ptr, T_DESCHEDULE_FUN);
+        plg[i].t_add_to_utils = dlsym(dl_ptr, T_ADD_TO_UTILS_FUN);
+        plg[i].t_remove_from_utils = dlsym(dl_ptr, T_REMOVE_FROM_UTILS_FUN);
+        plg[i].t_calc_prio = dlsym(dl_ptr, T_CALC_PRIO_FUN);
+        plg[i].t_test = dlsym(dl_ptr, T_TEST_FUN);
     }
     
     return 0;
 }
 
-int rts_plugins_init(struct rts_plugin** plg, int* num) {
+int rts_plugins_init(struct rts_plugin** plg, int* plgnum) {
     FILE* f;
     int num_of_plugin;
     
@@ -95,11 +100,11 @@ int rts_plugins_init(struct rts_plugin** plg, int* num) {
     skip_comment(f);
     num_of_plugin = count_num_of_plugin(f);
     (*plg) = calloc(num_of_plugin, sizeof(struct rts_plugin));
-    
+        
     read_conf(f, (*plg));
     load_libraries((*plg), num_of_plugin);
     
-    *num = num_of_plugin;
+    *plgnum = num_of_plugin;
     fclose(f);
     
     return 0;
