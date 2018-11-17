@@ -4,6 +4,7 @@
 #include <sched.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/sysinfo.h>
 
 #define MIN(val1, val2) (val1 < val2 ? val1 : val2)
 #define MAX(val1, val2) (val1 > val2 ? val1 : val2)
@@ -66,6 +67,7 @@ void ts_recalc_prio(struct rts_plugin* this, struct rts_taskset* ts) {
     uint32_t max_prio_user;
     uint32_t min_prio_user;
     
+    iterator = rts_taskset_iterator_init(ts);
     get_prio_bound(ts, this->pluginid, &min_prio_user, &max_prio_user);
     
     for(; iterator != NULL; iterator = iterator_get_next(iterator)) {
@@ -137,7 +139,7 @@ float t_test(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t
     task_util = rts_task_utilization(t);
     
     for(int i = 0; i < this->cpunum; i++) {
-        if(free_utils[i] >= task_util) {
+        if(task_util <= free_utils[i]) {
             t->cpu = i;
             return 1;
         }

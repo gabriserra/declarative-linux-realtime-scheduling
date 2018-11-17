@@ -81,8 +81,8 @@ int t_schedule(struct rts_task* t) {
     CPU_ZERO(&my_set);
     CPU_SET(t->cpu, &my_set);
 
-    if(sched_setaffinity(t->tid, sizeof(cpu_set_t), &my_set) < 0)
-        return -1;
+    //if(sched_setaffinity(t->tid, sizeof(cpu_set_t), &my_set) < 0)
+        //return -1;
     
     memset(&attr, 0, sizeof(attr));
     attr.size = sizeof(attr);
@@ -136,13 +136,13 @@ void t_calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_tas
 float t_test(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t, float* free_utils) { 
     int required;
     int got;
-    float taskutil;
+    float task_util;
     int free_cpu = -1;
     
-    taskutil = rts_task_utilization(t);
+    task_util = rts_task_utilization(t);
     
     for(int i = 0; i < this->cpunum && free_cpu == -1; i++)
-        if(free_utils[i] < taskutil)
+        if(task_util <= free_utils[i])
             free_cpu = i;
     
     if(free_cpu == -1)

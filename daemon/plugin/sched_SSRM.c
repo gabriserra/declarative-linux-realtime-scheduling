@@ -103,7 +103,7 @@ unsigned int hyperbolic_bound(struct rts_taskset* ts) {
     
     for(; iterator != NULL; iterator = iterator_get_next(iterator)) {
         t = rts_taskset_iterator_get_elem(iterator);
-        res *= (t->wcet / t->period) + 1;
+        res *= (t->wcet / (float)t->period) + 1;
     }
 
     if(res > 2)
@@ -251,19 +251,18 @@ float t_test(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t
     task_util = rts_task_utilization(t);
        
     for(int i = 0; i < this->cpunum && free_cpu == -1; i++) {
-        if(free_utils[i] < task_util)
+        if(task_util > free_utils[i])
             continue;
         
         rts_taskset_init(&ts_ssrm);
         sort_taskset(this, ts, &ts_ssrm, i);
+        rts_taskset_add_sorted_pr(&ts_ssrm, t);
 
         if(rts_taskset_get_size(&ts_ssrm) > (this->prio_max - this->prio_min + 1))
             continue;
-
-        if(hyperbolic_bound(&ts_ssrm))
+        else if(!hyperbolic_bound(&ts_ssrm))
             continue;
-
-        if(workload_analysis(&ts_ssrm))
+        else if(!workload_analysis(&ts_ssrm))
             continue;
         
         free_cpu = i;

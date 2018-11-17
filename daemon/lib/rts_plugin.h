@@ -57,6 +57,8 @@ struct rts_plugin {
     int prio_max;
     int pluginid;
     
+    void* dl_ptr;
+    
     int cpunum;
     float* util_used_percpu;
     
@@ -74,7 +76,9 @@ struct rts_plugin {
 
 };
 
-int rts_plugins_init(struct rts_plugin** plg, int* plgnum);
+int rts_plugins_init(struct rts_plugin** plgs, int* plgnum);
+
+void rts_plugins_destroy(struct rts_plugin* plgs, int plgnum);
 
 enum plugin get_plugin_from_str(char* str);
 

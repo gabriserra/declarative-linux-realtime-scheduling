@@ -11,8 +11,7 @@
 #include <stdio.h>
 
 
-float read_rt_kernel_budget() {
-    int rt_period, rt_runtime;
+void remove_rt_kernel_limit(int* rt_period, int* rt_runtime) {
     FILE* proc_rt_period = fopen(PROC_RT_PERIOD_FILE, "r");
     FILE* proc_rt_runtime = fopen(PROC_RT_RUNTIME_FILE, "r");
 
@@ -21,15 +20,27 @@ float read_rt_kernel_budget() {
         exit(EXIT_FAILURE);
     }
 
-    fscanf(proc_rt_period, "%d", &rt_period);
-    fscanf(proc_rt_runtime, "%d", &rt_runtime);
-
-    if(rt_runtime == -1)
-        return 1;
+    fscanf(proc_rt_period, "%d", rt_period);
+    fscanf(proc_rt_runtime, "%d", rt_runtime);
     
-    return ((float)rt_runtime) / ((float)rt_period);
+    freopen(PROC_RT_RUNTIME_FILE, "w", proc_rt_period);
+    fprintf(proc_rt_period, "%d", -1);
+    
+    fclose(proc_rt_period);
+    fclose(proc_rt_runtime);
 }
 
+void restore_rt_kernel_limit(int rt_runtime) {
+    FILE* proc_rt_runtime = fopen(PROC_RT_RUNTIME_FILE, "w");
+
+    if(proc_rt_runtime == NULL) {
+        printf("Error during proc file open ...\n");
+        exit(EXIT_FAILURE);
+    }
+
+    fprintf(proc_rt_runtime, "%d", rt_runtime);
+    fclose(proc_rt_runtime);
+}
 
 static struct rts_reply req_connection(struct rts_daemon* data, int cli_id, pid_t ppid) {
     struct rts_reply rep;
@@ -45,11 +56,11 @@ static struct rts_reply req_cap_query(struct rts_daemon* data, enum QUERY_TYPE t
     
     switch(type) {
         case RTS_BUDGET:
-            rep.payload = read_rt_kernel_budget();
+            rep.payload = rts_scheduler_get_util(&(data->sched));
             rep.rep_type = RTS_CAP_QUERY_OK;
             break;
         case RTS_REMAINING_BUDGET:
-            rep.payload = rts_scheduler_remaining_budget(&(data->sched));
+            rep.payload = rts_scheduler_get_remaining_util(&(data->sched));
             rep.rep_type = RTS_CAP_QUERY_OK;
             break;
         default:
@@ -129,11 +140,16 @@ static struct rts_reply req_rsv_destroy(struct rts_daemon* data, rsv_t rsvid) {
 }
 
 int rts_daemon_init(struct rts_daemon* data) {
+    int rt_period;
+    int rt_runtime; 
+    
+    remove_rt_kernel_limit(&rt_period, &rt_runtime);
+    
     if(rts_carrier_init(&(data->chann)) < 0)
         return -1;
     
     rts_taskset_init(&(data->tasks));
-    rts_scheduler_init(&(data->sched), &(data->tasks), read_rt_kernel_budget());
+    rts_scheduler_init(&(data->sched), &(data->tasks), rt_period, rt_runtime);
     
     return 0;
 }
@@ -242,4 +258,16 @@ void rts_daemon_loop(struct rts_daemon* data) {
     }
 
     return;
+}
+
+void rts_daemon_destroy(struct rts_daemon* data) {
+    struct rts_task* t;
+        
+    while(1) {
+        t = rts_taskset_remove_top(&(data->tasks));
+        rts_task_destroy(t);
+    }
+    
+    restore_rt_kernel_limit(data->sched.sys_rt_runtime);
+    rts_scheduler_destroy(&(data->sched));
 }

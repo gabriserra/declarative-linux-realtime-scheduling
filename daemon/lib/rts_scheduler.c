@@ -79,15 +79,36 @@ static int rts_scheduler_deschedule(struct rts_scheduler* s, struct rts_task* t)
 
 // PUBLIC
 
-void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, float sys_rt_free_util) {
+void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, int rt_period, int rt_runtime) {
+    int i;
+    float sys_rt_util;
+    
+    s->sys_rt_period = rt_period;
+    s->sys_rt_runtime = rt_runtime;
+    
+    if(rt_runtime == -1)
+        sys_rt_util = 1;
+    else
+        sys_rt_util = s->sys_rt_period / (float)s->sys_rt_runtime;
+    
     s->num_of_cpu = get_nprocs();
     s->sys_rt_free_utils = calloc(s->num_of_cpu, sizeof(float));
     s->sys_rt_curr_free_utils = calloc(s->num_of_cpu, sizeof(float));
-    memset(s->sys_rt_free_utils, sys_rt_free_util, sizeof(float) * s->num_of_cpu);
-    memset(s->sys_rt_curr_free_utils, sys_rt_free_util, sizeof(float) * s->num_of_cpu);
+    
+    for(i = 0; i < s->num_of_cpu; i++) {
+        s->sys_rt_free_utils[i] = sys_rt_util;
+        s->sys_rt_curr_free_utils[i] = sys_rt_util;
+    }
+    
     s->taskset = ts;
     s->next_rsv_id = 0;
     rts_plugins_init(&(s->plugin), &(s->num_of_plugin));
+}
+
+void rts_scheduler_destroy(struct rts_scheduler* s) {
+    free(s->sys_rt_free_utils);
+    free(s->sys_rt_curr_free_utils);
+    rts_plugins_destroy(s->plugin, s->num_of_plugin);
 }
 
 void rts_scheduler_delete(struct rts_scheduler* s, pid_t ppid) {   
@@ -107,13 +128,22 @@ void rts_scheduler_delete(struct rts_scheduler* s, pid_t ppid) {
     }
 }
 
-float rts_scheduler_remaining_budget(struct rts_scheduler* s) {
-    float free_budget = 0;
+float rts_scheduler_get_util(struct rts_scheduler* s) {
+    float sys_util = 0;
     
     for(int i = 0; i < s->num_of_cpu; i++)
-        free_budget += s->sys_rt_free_utils[i];
+        sys_util += s->sys_rt_free_utils[i];
     
-    return free_budget / s->num_of_cpu;
+    return sys_util / s->num_of_cpu;
+}
+
+float rts_scheduler_get_remaining_util(struct rts_scheduler* s) {
+    float free_util = 0;
+    
+    for(int i = 0; i < s->num_of_cpu; i++)
+        free_util += s->sys_rt_curr_free_utils[i];
+    
+    return free_util / s->num_of_cpu;
 }
 
 rsv_t rts_scheduler_rsv_create(struct rts_scheduler* s, struct rts_params* tp, pid_t ppid) {

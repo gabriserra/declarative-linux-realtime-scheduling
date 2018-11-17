@@ -8,7 +8,8 @@
 struct rts_daemon data;
 
 void term() {
-    printf("\nRTS daemon was signaled. It will stop.\n");
+    printf("\nRTS daemon was signaled. It will destroy data and stop.\n");
+    rts_daemon_destroy(&data);
     exit(EXIT_SUCCESS);
 }
 

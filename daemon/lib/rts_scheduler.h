@@ -11,17 +11,23 @@ struct rts_scheduler {
     int num_of_plugin;
     int num_of_cpu;
     long next_rsv_id;
+    int sys_rt_runtime;
+    int sys_rt_period;
     float* sys_rt_free_utils;
     float* sys_rt_curr_free_utils;
     struct rts_taskset* taskset;
     struct rts_plugin* plugin;
 };
 
-void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, float sys_rt_budget);
+void rts_scheduler_init(struct rts_scheduler* s, struct rts_taskset* ts, int rt_period, int rt_runtime);
+
+void rts_scheduler_destroy(struct rts_scheduler* s);
 
 void rts_scheduler_delete(struct rts_scheduler* s, pid_t pid);
 
-float rts_scheduler_remaining_budget(struct rts_scheduler* s);
+float rts_scheduler_get_util(struct rts_scheduler* s);
+
+float rts_scheduler_get_remaining_util(struct rts_scheduler* s);
 
 rsv_t rts_scheduler_rsv_create(struct rts_scheduler* s, struct rts_params* tp, pid_t ppid);
 

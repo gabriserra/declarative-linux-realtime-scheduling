@@ -71,8 +71,9 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
         if(dl_ptr == NULL)
             return -1;
         
+        plg[i].dl_ptr = dl_ptr;
         plg[i].cpunum = cpunum;
-        plg[i].util_used_percpu = calloc(cpunum, sizeof(float));
+        plg[i].util_used_percpu = calloc(cpunum, sizeof(float));        
         plg[i].pluginid = i;
         
         plg[i].ts_recalc_utils = dlsym(dl_ptr, TS_RECALC_UTILS_FUN);
@@ -88,7 +89,7 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
     return 0;
 }
 
-int rts_plugins_init(struct rts_plugin** plg, int* plgnum) {
+int rts_plugins_init(struct rts_plugin** plgs, int* plgnum) {
     FILE* f;
     int num_of_plugin;
     
@@ -99,15 +100,24 @@ int rts_plugins_init(struct rts_plugin** plg, int* plgnum) {
     
     skip_comment(f);
     num_of_plugin = count_num_of_plugin(f);
-    (*plg) = calloc(num_of_plugin, sizeof(struct rts_plugin));
+    (*plgs) = calloc(num_of_plugin, sizeof(struct rts_plugin));
         
-    read_conf(f, (*plg));
-    load_libraries((*plg), num_of_plugin);
+    read_conf(f, (*plgs));
+    load_libraries((*plgs), num_of_plugin);
     
     *plgnum = num_of_plugin;
     fclose(f);
     
     return 0;
+}
+
+void rts_plugins_destroy(struct rts_plugin* plgs, int plgnum) {    
+    for(int i = 0; i < plgnum; i++) {
+        free(plgs[i].util_used_percpu);
+        dlclose(plgs[i].dl_ptr);
+    }
+    
+    free(plgs);
 }
 
 enum plugin get_plugin_from_str(char* str) {

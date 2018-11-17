@@ -78,6 +78,9 @@ all: $(DAEMON)
 
 $(DAEMON): $(DAEMON).o $(CMPS_O) $(LIBS_O) 
 	$(CC) -o $(DAEMON) $(CFLAGS) $(DAEMON).o $(CMPS_O) $(LIBS_O) $(LDFLAGS)
+	@echo $(DAEMON) needs root privileges to run. You will be asked for root password.
+	@sudo chown root $(DAEMON)
+	@sudo chmod 4755 $(DAEMON)
 	
 $(DAEMON).o: $(DAEMON).c 
 	$(CC) -c $(DAEMON).c
