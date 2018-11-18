@@ -1,5 +1,6 @@
 #include "rts_utils.h"
 #include <stdlib.h>
+#include <sys/time.h>
 
 void time_add_us(struct timespec *t, uint64_t us) {
     t->tv_sec += MICRO_TO_SEC(us);               
@@ -121,4 +122,12 @@ void compute_for(struct timespec* t_act, uint32_t exec_milli_max) {
 void wait_next_activation(struct timespec* t_act, uint32_t period_milli) {
     time_add_ms(t_act, period_milli);
     clock_nanosleep(CLOCK_MONOTONIC, TIMER_ABSTIME, t_act, NULL);
+}
+
+void set_timer(uint32_t milli) {
+    struct itimerval t;
+    t.it_interval.tv_sec = 0;
+    t.it_interval.tv_usec = MILLI_TO_MICRO(milli);
+
+    setitimer(ITIMER_REAL, &t, NULL);
 }

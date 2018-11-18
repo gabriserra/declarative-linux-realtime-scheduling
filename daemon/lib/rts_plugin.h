@@ -53,12 +53,11 @@ struct rts_task;
 struct rts_taskset;
 
 struct rts_plugin {
+    void* dl_ptr;
+    
     int prio_min;
     int prio_max;
     int pluginid;
-    
-    void* dl_ptr;
-    
     int cpunum;
     float* util_used_percpu;
     

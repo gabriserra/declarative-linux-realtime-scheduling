@@ -10,8 +10,6 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/lib/rts_lib.c</file>
-            <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/daemon/lib/rts_channel.c</file>
             <file>file:/home/gabriele/NetBeansProjects/declarative-linux-realtime-scheduling/test/test.c</file>
         </group>
     </open-files>

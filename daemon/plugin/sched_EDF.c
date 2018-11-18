@@ -1,6 +1,7 @@
 #define _GNU_SOURCE
 
 #include "../lib/rts_taskset.h"
+#include "../lib/rts_plugin.h"
 #include <sched.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -81,8 +82,8 @@ int t_schedule(struct rts_task* t) {
     CPU_ZERO(&my_set);
     CPU_SET(t->cpu, &my_set);
 
-    //if(sched_setaffinity(t->tid, sizeof(cpu_set_t), &my_set) < 0)
-        //return -1;
+    if(sched_setaffinity(t->tid, sizeof(cpu_set_t), &my_set) < 0)
+        return -1;
     
     memset(&attr, 0, sizeof(attr));
     attr.size = sizeof(attr);

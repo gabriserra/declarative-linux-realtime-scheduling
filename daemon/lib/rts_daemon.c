@@ -51,6 +51,32 @@ static struct rts_reply req_connection(struct rts_daemon* data, int cli_id, pid_
     return rep;
 }
 
+static struct rts_reply req_refresh_sys(struct rts_daemon* data) {
+    struct rts_reply rep;
+    
+    if(rts_scheduler_refresh_utils(&(data->sched)) < 0)
+        rep.rep_type = RTS_REFRESH_SYS_ERR;
+    
+    if(rts_scheduler_refresh_prios(&(data->sched)) < 0)
+        rep.rep_type = RTS_REFRESH_SYS_ERR;
+    
+    rep.rep_type = RTS_REFRESH_SYS_OK;
+    return rep;
+}
+
+static struct rts_reply req_refresh_single(struct rts_daemon* data, rsv_t rsvid) {
+    struct rts_reply rep;
+    
+    if(rts_scheduler_refresh_util(&(data->sched), rsvid) < 0)
+        rep.rep_type = RTS_REFRESH_SYS_ERR;
+    
+    if(rts_scheduler_refresh_prio(&(data->sched), rsvid) < 0)
+        rep.rep_type = RTS_REFRESH_SYS_ERR;
+    
+    rep.rep_type = RTS_REFRESH_SYS_OK;
+    return rep;
+}
+
 static struct rts_reply req_cap_query(struct rts_daemon* data, enum QUERY_TYPE type) {
     struct rts_reply rep;
     
@@ -150,12 +176,16 @@ int rts_daemon_init(struct rts_daemon* data) {
     
     rts_taskset_init(&(data->tasks));
     rts_scheduler_init(&(data->sched), &(data->tasks), rt_period, rt_runtime);
-    
+        
     return 0;
 }
 
-void rts_daemon_register_sig(void (*func)(int)) {
+void rts_daemon_register_sig_int(void (*func)(int)) {
     signal(SIGINT, func);
+}
+
+void rts_daemon_register_sig_alarm(void (*func)(int)) {
+    signal(SIGALRM, func);
 }
 
 int rts_daemon_check_for_fail(struct rts_daemon* data, int cli_id) {
@@ -218,6 +248,12 @@ int rts_daemon_process_req(struct rts_daemon* data, int cli_id) {
     switch(req.req_type) {
         case RTS_CONNECTION:
             rep = req_connection(data, cli_id, req.payload.ids.pid);
+            break;
+        case RTS_REFRESH_SYS:
+            rep = req_refresh_sys(data);
+            break;
+        case RTS_REFRESH_SINGLE:
+            rep = req_refresh_single(data, req.payload.ids.rsvid);
             break;
         case RTS_CAP_QUERY:
             rep = req_cap_query(data, req.payload.query_type);

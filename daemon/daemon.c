@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <stdlib.h>
 
+#define TIMER_INTERVAL 500
+
 struct rts_daemon data;
 
 void term() {
@@ -24,7 +26,7 @@ int main(int argc, char* argv[]) {
     if(rts_daemon_init(&data) < 0)
         exit_err("Something gone wrong in the init phase.\n");
     
-    rts_daemon_register_sig(term);
+    rts_daemon_register_sig_int(term);
     rts_daemon_loop(&data);
     
     return 0;

@@ -71,8 +71,8 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
         if(dl_ptr == NULL)
             return -1;
         
-        plg[i].dl_ptr = dl_ptr;
         plg[i].cpunum = cpunum;
+        plg[i].dl_ptr = dl_ptr;
         plg[i].util_used_percpu = calloc(cpunum, sizeof(float));        
         plg[i].pluginid = i;
         

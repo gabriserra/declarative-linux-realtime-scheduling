@@ -62,6 +62,10 @@ clean:
 		$(CMP_PATH)/list_ptr.o \
 		$(CMP_PATH)/list_int.o \
 		$(CMP_PATH)/shatomic.o \
+		sched_SSRM.o \
+		sched_RR.o \
+		sched_FP.o \
+		sched_EDF.o \
 		sched_SSRM.so \
 		sched_RR.so \
 		sched_FP.so \

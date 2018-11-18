@@ -31,7 +31,9 @@ int rts_daemon_init(struct rts_daemon* data);
 
 void rts_daemon_destroy(struct rts_daemon* data);
 
-void rts_daemon_register_sig(void (*func)(int));
+void rts_daemon_register_sig_int(void (*func)(int));
+
+void rts_daemon_register_sig_alarm(void (*func)(int));
 
 void rts_daemon_handle_req(struct rts_daemon* data, int cli_id);
 
