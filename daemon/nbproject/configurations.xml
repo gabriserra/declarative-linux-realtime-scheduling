@@ -5,6 +5,7 @@
       <df name="components">
         <in>list_int.c</in>
         <in>list_ptr.c</in>
+        <in>logger.h</in>
         <in>shatomic.c</in>
         <in>usocket.c</in>
       </df>
@@ -63,6 +64,8 @@
       <item path="components/list_ptr.c" ex="false" tool="0" flavor2="3">
         <cTool flags="0">
         </cTool>
+      </item>
+      <item path="components/logger.h" ex="false" tool="3" flavor2="0">
       </item>
       <item path="components/shatomic.c" ex="false" tool="0" flavor2="3">
         <cTool flags="0">

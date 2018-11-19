@@ -30,13 +30,16 @@ struct rts_task {
     pid_t               tid;		// thread/process id
     clockid_t           clk;            // type of clock to be used [REALTIME, MONOTONIC, ...]
     uint32_t            cpu;
+    
+    float               util;           // task CPU utilization [0.0 - 1.0]
     uint32_t		wcet;		// worst case ex time [microseconds]
     uint32_t 		period;		// period of task [millisecond]
     uint32_t 		deadline;	// relative deadline [millisecond]
-    uint32_t 		priority;	// user priority of task 
-    uint32_t            schedprio;      // scheduling real prio [LOW_PRIO, HIGH_PRIO] 
-    uint32_t 		dmiss;		// num of deadline misses
-    int                 pluginid;         // if != NONE -> the scheduling alg
+    uint32_t 		priority;	// user priority of task
+    uint32_t            schedprio;      // scheduling real prio [LOW_PRIO, HIGH_PRIO]
+
+    
+    int                 pluginid;       // if != NONE -> the scheduling alg
     struct shatomic     est_param;      // nactivation, wcet, period
 };
 
@@ -44,10 +47,10 @@ struct rts_task {
 // PUBLIC: CREATE AND DESTROY FUNCTIONS
 //------------------------------------------
 
-// Instanciate and initialize a real time task structure
+// instantiate and initialize a real time task structure
 int rts_task_init(struct rts_task **tp, rsv_t id, clockid_t clk);
 
-// Instanciate and initialize a real time task structure from another one
+// instantiate and initialize a real time task structure from another one
 int rts_task_copy(struct rts_task *tp, struct rts_task *tp_copy);
 
 // Destroy a real time task structure
@@ -78,12 +81,6 @@ uint32_t rts_task_get_deadline(struct rts_task* tp);
 // Set the priority
 void set_priority(struct rts_task* tp, uint32_t priority);
 
-// Get the priority
-uint32_t get_priority(struct rts_task* tp);
-
-// Get the deadline miss number
-uint32_t get_dmiss(struct rts_task* tp);
-
 int task_cmp_deadline(struct rts_task* tp1, struct rts_task* tp2);
 
 int task_cmp(struct rts_task* tp1, struct rts_task* tp2, enum PARAM p, int flag);
@@ -94,6 +91,8 @@ float rts_task_calc_rem_budget(struct rts_task* t);
 
 int rts_task_get_est_param(struct rts_task* t, int FLAG);
 
-float rts_task_utilization(struct rts_task* t);
+void rts_task_update_util(struct rts_task* t);
+
+float rts_task_get_util(struct rts_task* t);
 
 #endif

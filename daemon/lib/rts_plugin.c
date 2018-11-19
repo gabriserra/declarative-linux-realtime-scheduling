@@ -77,10 +77,11 @@ static int load_libraries(struct rts_plugin* plg, int num_of_plugin) {
         plg[i].pluginid = i;
         
         plg[i].ts_recalc_utils = dlsym(dl_ptr, TS_RECALC_UTILS_FUN);
-        plg[i].ts_recalc_prio = dlsym(dl_ptr, TS_RECALC_PRIO_FUN);
+        plg[i].ts_recalc_prios = dlsym(dl_ptr, ts_recalc_prios_FUN);
         plg[i].t_schedule = dlsym(dl_ptr, T_SCHEDULE_FUN);
         plg[i].t_deschedule = dlsym(dl_ptr, T_DESCHEDULE_FUN);
         plg[i].t_add_to_utils = dlsym(dl_ptr, T_ADD_TO_UTILS_FUN);
+        plg[i].t_recalc_util = dlsym(dl_ptr, T_RECALC_UTIL_FUN);
         plg[i].t_remove_from_utils = dlsym(dl_ptr, T_REMOVE_FROM_UTILS_FUN);
         plg[i].t_calc_prio = dlsym(dl_ptr, T_CALC_PRIO_FUN);
         plg[i].t_test = dlsym(dl_ptr, T_TEST_FUN);

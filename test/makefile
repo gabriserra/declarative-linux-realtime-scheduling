@@ -28,11 +28,11 @@ LDFLAGS = -L/usr/lib/x86_64-linux-gnu -pthread
 #--------------------------------------------------- 
 # DEBUG behavior 
 #---------------------------------------------------
-ifdef DEBUG
-    CFLAGS += -g -O0
-else
-    CFLAGS += -O3
-endif
+#ifdef DEBUG
+    #CFLAGS += -g -O0
+#else
+    #CFLAGS += -O3
+#endif
 
 #--------------------------------------------------- 
 # Dependencies
@@ -77,7 +77,7 @@ $(TEST).o: $(TEST).c
 	$(CC) -c $(CFLAGS) $(TEST).c
 	
 clean:
-	@rm -rf $(TEST).o $(UTILS_O) $(CMP_PATH)/usocket.o $(CMP_PATH)/shatomic.o $(PRV_PATH)/rts_channel.o $(LIB_PATH)/rts_lib.o 
+	@rm -rf $(TEST).o $(UTILS_O) $(CMP_PATH)/usocket.o $(CMP_PATH)/shatomic.o $(PRV_PATH)/rts_channel.o $(PRV_PATH)/rts_utils.o $(LIB_PATH)/rts_lib.o 
 	
 
 

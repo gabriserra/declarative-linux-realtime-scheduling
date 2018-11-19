@@ -165,6 +165,7 @@ struct node_ptr* rts_taskset_get_next_node(struct rts_taskset* ts, struct node_p
  */
 void rts_taskset_sort(struct rts_taskset* ts, enum PARAM p, int flag);
 
+struct rts_task* rts_taskset_search(struct rts_taskset* ts, rsv_t rsvid);
 
 struct rts_task* rts_taskset_remove_by_ppid(struct rts_taskset* ts, pid_t ppid);
 

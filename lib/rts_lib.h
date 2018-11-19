@@ -20,6 +20,10 @@ struct rts_thread {
 
 int rts_daemon_connect(struct rts_access* c);
 
+int rts_refresh_sys(struct rts_access* c);
+
+int rts_refresh_single(struct rts_access* c, rsv_t rsvid);
+
 float rts_cap_query(struct rts_access* c, enum QUERY_TYPE type);
 
 int rts_params_init(struct rts_params *tp);
@@ -56,6 +60,8 @@ void rts_rsv_begin(struct rts_params* tp);
 
 void rts_rsv_end(struct rts_params* tp);
 
+// THREAD _ TEST
+
 void rts_thread_init(struct rts_thread* t, struct rts_params* p);
 
 void rts_thread_compute(struct rts_thread* t);
@@ -72,7 +78,7 @@ void rts_thread_set_activation_num(struct rts_thread* t, int curr, int tot);
 
 int rts_thread_computation_ended(struct rts_thread* t);
 
-void rts_thread_print_info(struct rts_thread* t, int tid);
+void rts_thread_print_info(struct rts_thread* t, struct rts_params* p, int tid);
 
 float rts_thread_calc_budget(struct rts_thread* t, struct rts_params* p);
 

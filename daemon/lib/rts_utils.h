@@ -53,7 +53,7 @@ struct timespec get_thread_time();
 
 uint32_t get_thread_time_ms();
 
-void compute_for(struct timespec* t_act, uint32_t exec_milli_max);
+void compute_for(uint32_t exec_milli_max);
 
 void wait_next_activation(struct timespec* t_act, uint32_t period_milli);
 

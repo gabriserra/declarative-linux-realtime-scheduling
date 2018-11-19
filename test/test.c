@@ -44,8 +44,8 @@ void* RT_task(void* argv)
         if(rts_thread_computation_ended(&t))
             break;
         
-        rts_thread_print_info(&t, t_num);
         rts_rsv_begin(t_par);                           // begin to consume time
+        rts_thread_print_info(&t, t_par, t_num);
         rts_thread_compute(&t);                         // simulate computation
         rts_rsv_end(t_par);                             // end to consume time
         rts_thread_wait_activation(&t);                 // sleep until next activation
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
     char argvv[10];
     char argvvv[50];
     
-    strcpy(argvv, "4");
+    strcpy(argvv, "3");
     strcpy(argvvv, "threads.cfg");
     
     nthread = atoi(argvv);
@@ -107,7 +107,7 @@ int main(int argc, char* argv[])
         fill_params(&t_par, i, &(rt_par[i]));
         pthread_create(&(pt_id[i]), NULL, RT_task, (void*)&(t_par));
         lock_and_test(&m, &(t_ids[i]), 0);
-        rts_rsv_attach_thread(&rt_chn, rsv_id[i], (*t_ids));        
+        rts_rsv_attach_thread(&rt_chn, rsv_id[i], t_ids[i]);        
     }
     
     for (int i = 0; i < nthread; i++) 

@@ -17,6 +17,7 @@
           <itemPath>../daemon/lib/rts_channel.c</itemPath>
           <itemPath>../daemon/lib/rts_channel.h</itemPath>
           <itemPath>../daemon/lib/rts_types.h</itemPath>
+          <itemPath>../daemon/lib/rts_utils.c</itemPath>
           <itemPath>../daemon/lib/rts_utils.h</itemPath>
         </logicalFolder>
       </logicalFolder>
@@ -81,6 +82,10 @@
         </cTool>
       </item>
       <item path="../daemon/lib/rts_channel.c" ex="false" tool="0" flavor2="3">
+        <cTool flags="0">
+        </cTool>
+      </item>
+      <item path="../daemon/lib/rts_utils.c" ex="false" tool="0" flavor2="3">
         <cTool flags="0">
         </cTool>
       </item>

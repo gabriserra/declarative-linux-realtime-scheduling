@@ -5,6 +5,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#define MAX_EST_PERIOD 10000
+#define MAX_EST_WCET 5000
+#define MAX_ACT_NUMBER 500
+
 int rts_daemon_connect(struct rts_access* c) {
     if(rts_access_init(c) < 0)
         return RTS_ERROR;
@@ -24,6 +28,35 @@ int rts_daemon_connect(struct rts_access* c) {
         return RTS_ERROR;
 
     return RTS_OK;
+}
+
+int rts_refresh_sys(struct rts_access* c) {
+    c->req.req_type = RTS_REFRESH_SYS;
+
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
+
+    if(c->rep.rep_type == RTS_REFRESH_SYS_ERR)
+        return RTS_ERROR;
+    
+    return RTS_OK; 
+}
+
+int rts_refresh_single(struct rts_access* c, rsv_t rsvid) {
+    c->req.req_type = RTS_REFRESH_SINGLE;
+    c->req.payload.ids.rsvid = rsvid;
+
+    if(rts_access_send(c) < 0)
+        return RTS_ERROR;
+    if(rts_access_recv(c) < 0)
+        return RTS_ERROR;
+
+    if(c->rep.rep_type == RTS_REFRESH_SINGLE_ERR)
+        return RTS_ERROR;
+    
+    return RTS_OK; 
 }
 
 float rts_cap_query(struct rts_access* c, enum QUERY_TYPE type) {
@@ -52,8 +85,8 @@ int rts_params_init(struct rts_params *tp) {
         return -1;
     
     shatomic_put_value(&(tp->estimatedp), EST_NUM_ACTIVATION, 0);
-    shatomic_put_value(&(tp->estimatedp), EST_PERIOD, UINT32_MAX);
-    shatomic_put_value(&(tp->estimatedp), EST_WCET, UINT32_MAX / 3);
+    shatomic_put_value(&(tp->estimatedp), EST_PERIOD, MAX_EST_PERIOD);
+    shatomic_put_value(&(tp->estimatedp), EST_WCET, MAX_EST_WCET);
     
     return 0;
 }
@@ -132,16 +165,18 @@ void rts_rsv_begin(struct rts_params* tp) {
     t_abs_act_prec = shatomic_get_value(&(tp->estimatedp), EST_ABS_ACTIVATION);
     t_abs_act_curr = get_time_now_ms(tp->clk);
     
-    t_period_prec = shatomic_get_value(&(tp->estimatedp), EST_PERIOD);
-    t_period = t_abs_act_curr - t_abs_act_prec;
-    t_period_curr = REACTIVITY * t_period + (1 - REACTIVITY) * t_period_prec;
+    if(t_act_num > 0) {
+        t_period_prec = shatomic_get_value(&(tp->estimatedp), EST_PERIOD);
+        t_period = t_abs_act_curr - t_abs_act_prec;
+        t_period_curr = REACTIVITY * t_period + (1 - REACTIVITY) * t_period_prec;
+        shatomic_put_value(&(tp->estimatedp), EST_PERIOD, t_period_curr);
+    }
     
     t_perthread_act = get_thread_time_ms(tp->clk);
     
     shatomic_put_value(&(tp->estimatedp), EST_PERTHREADCLK, t_perthread_act);
     shatomic_put_value(&(tp->estimatedp), EST_NUM_ACTIVATION, ++t_act_num);
     shatomic_put_value(&(tp->estimatedp), EST_ABS_ACTIVATION, t_abs_act_curr);
-    shatomic_put_value(&(tp->estimatedp), EST_PERIOD, t_period_curr);
 }
 
 void rts_rsv_end(struct rts_params* tp) {
@@ -250,7 +285,7 @@ void rts_thread_init(struct rts_thread* t, struct rts_params* p) {
 }
 
 void rts_thread_compute(struct rts_thread* t) {
-    compute_for(&(t->t_activation_time), t->t_wcet);
+    compute_for(t->t_wcet);
 }
 
 void rts_thread_wait_activation(struct rts_thread* t) {
@@ -265,7 +300,7 @@ void rts_thread_calc_exec(struct rts_thread* t, int cfg_budg, int cfg_per, int c
     else if(cfg_per != 0)
         t->t_wcet = cfg_per;
     else
-        t->t_wcet = rand();
+        t->t_wcet = rand() % MAX_EST_WCET;
 }
 
 void rts_thread_calc_period(struct rts_thread* t, int cfg_budg, int cfg_per, int cfg_dead) {
@@ -276,12 +311,12 @@ void rts_thread_calc_period(struct rts_thread* t, int cfg_budg, int cfg_per, int
     else if(cfg_budg != 0)
         t->t_period = WCET_TO_PERIOD(cfg_budg);
     else
-        t->t_period = rand();   
+        t->t_period = rand() % MAX_EST_PERIOD; 
 }
 
 void rts_thread_rand_activation_num(struct rts_thread* t) {
     t->t_activation_num_curr = 0;
-    t->t_activation_num_tot = rand();
+    t->t_activation_num_tot = rand() % MAX_ACT_NUMBER;
 }
 
 void rts_thread_set_activation_num(struct rts_thread* t, int curr, int tot) {
@@ -298,9 +333,16 @@ int rts_thread_computation_ended(struct rts_thread* t) {
     return 0;
 }
 
-void rts_thread_print_info(struct rts_thread* t, int tid) {
-    printf("THREAD %d INFO - WCET: %d | PERIOD: %d - ACTIVATION NUM: %d\n",
-            tid, t->t_wcet, t->t_period, t->t_activation_num_curr);
+void rts_thread_print_info(struct rts_thread* t, struct rts_params* p, int tid) {
+    printf("THREAD %d INFO - WC: %d | PR: %d | ACT NUM: %d | ACT NUM TOT: %d | EST WC: %ld | EST PR: %ld | EST PER THR CLK: %ld\n",
+            tid, 
+            t->t_wcet, 
+            t->t_period, 
+            t->t_activation_num_curr,
+            t->t_activation_num_tot,
+            rts_params_get_est_param(p, EST_WCET),
+            rts_params_get_est_param(p, EST_PERIOD),
+            rts_params_get_est_param(p, EST_PERTHREADCLK));
 }
 
 float rts_thread_calc_budget(struct rts_thread* t, struct rts_params* p) {

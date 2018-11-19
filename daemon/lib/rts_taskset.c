@@ -206,11 +206,9 @@ struct node_ptr* rts_taskset_get_next_node(struct rts_taskset* ts, struct node_p
  * 
  * @endinternal
  */
-/*
-void* taskset_search_elem(struct rt_taskset* ts, struct rt_task* task) {
-    return list_ptr_search_elem(&(ts->tasks), (void*) task, taskset_cmp_deadline);
+struct rts_task* rts_taskset_search(struct rts_taskset* ts, rsv_t rsvid) {
+    return list_ptr_search_elem(&(ts->tasks), (void*)&rsvid, rts_taskset_cmp_rsvid);
 }
-*/
 
 /**
  * @internal

@@ -45,7 +45,7 @@ uint32_t prio_remap(uint32_t max_prio_s, uint32_t min_prio_s, uint32_t max_prio_
     return min_prio_s + slope * (prio - min_prio_u);
 }
 
-void ts_recalc_utils(struct rts_plugin* this, struct rts_taskset* ts) {
+int ts_recalc_utils(struct rts_plugin* this, struct rts_taskset* ts) {
     iterator_t iterator;
     struct rts_task* t;
     
@@ -56,11 +56,17 @@ void ts_recalc_utils(struct rts_plugin* this, struct rts_taskset* ts) {
         t = rts_taskset_iterator_get_elem(iterator);
         
         if(t->pluginid == this->pluginid)
-            this->util_used_percpu[t->cpu] += rts_task_utilization(t);
+            this->util_used_percpu[t->cpu] += rts_task_get_util(t);
     }
+    
+    for(int i = 0; i < this->cpunum; i++)
+        if(this->util_used_percpu[i] > 1)
+            return -1;
+    
+    return 0;
 }
 
-void ts_recalc_prio(struct rts_plugin* this, struct rts_taskset* ts) {
+void ts_recalc_prios(struct rts_plugin* this, struct rts_taskset* ts) {
     iterator_t iterator;
     struct rts_task* t;
     
@@ -118,11 +124,22 @@ int t_deschedule(struct rts_task* t) {
 }
 
 void t_add_to_utils(struct rts_plugin* this, struct rts_task* t) {
-    this->util_used_percpu[t->cpu] += rts_task_utilization(t);
+    this->util_used_percpu[t->cpu] += rts_task_get_util(t);
 }
 
 void t_remove_from_utils(struct rts_plugin* this, struct rts_task* t) {
-    this->util_used_percpu[t->cpu] -= rts_task_utilization(t);
+    this->util_used_percpu[t->cpu] -= rts_task_get_util(t);
+}
+
+int t_recalc_util(struct rts_plugin* this, struct rts_task* t) {
+    this->t_remove_from_utils(this, t);
+    rts_task_update_util(t);
+    this->t_add_to_utils(this, t);
+    
+    if(this->util_used_percpu[t->cpu] > 1)
+        return -1;
+    
+    return 0;
 }
 
 void t_calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t) {
@@ -136,7 +153,7 @@ void t_calc_prio(struct rts_plugin* this, struct rts_taskset* ts, struct rts_tas
 float t_test(struct rts_plugin* this, struct rts_taskset* ts, struct rts_task* t, float* free_utils) {
     float task_util;
     
-    task_util = rts_task_utilization(t);
+    task_util = rts_task_get_util(t);
     
     for(int i = 0; i < this->cpunum; i++) {
         if(task_util <= free_utils[i]) {

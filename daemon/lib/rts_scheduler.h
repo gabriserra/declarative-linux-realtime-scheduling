@@ -6,6 +6,7 @@
 
 struct rts_taskset;
 struct rts_plugin;
+struct rts_task;
 
 struct rts_scheduler {    
     int num_of_plugin;
@@ -25,7 +26,15 @@ void rts_scheduler_destroy(struct rts_scheduler* s);
 
 void rts_scheduler_delete(struct rts_scheduler* s, pid_t pid);
 
-float rts_scheduler_get_util(struct rts_scheduler* s);
+int rts_scheduler_refresh_utils(struct rts_scheduler* s);
+
+void rts_scheduler_refresh_prios(struct rts_scheduler* s);
+
+int rts_scheduler_refresh_util(struct rts_scheduler* s, struct rts_task* t);
+
+void rts_scheduler_refresh_prio(struct rts_scheduler* s, struct rts_task* t);
+
+float rts_scheduler_get_free_util(struct rts_scheduler* s);
 
 float rts_scheduler_get_remaining_util(struct rts_scheduler* s);
 

@@ -101,13 +101,14 @@ uint32_t get_thread_time_ms() {
     return timespec_to_ms(&ts);
 }
 
-void compute_for(struct timespec* t_act, uint32_t exec_milli_max) {
+void compute_for(uint32_t exec_milli_max) {
     uint32_t exec_milli;
     struct timespec t_curr;
     struct timespec t_end;
     
     exec_milli = rand() % exec_milli_max; 
-    time_copy(&t_end, t_act);
+
+    clock_gettime(CLOCK_THREAD_CPUTIME_ID, &t_end);
     time_add_ms(&t_end, exec_milli);
     
     while(1) {

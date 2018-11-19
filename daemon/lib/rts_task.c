@@ -52,7 +52,11 @@ void rts_task_set_wcet(struct rts_task* tp, uint64_t wcet) {
 
 // Get the task worst case execution time
 uint32_t rts_task_get_wcet(struct rts_task* tp) {
-    return tp->wcet != 0 ? tp->wcet : rts_task_get_est_param(tp, EST_WCET);
+    return tp->wcet;
+}
+
+uint32_t rts_task_get_est_wcet(struct rts_task* tp) {
+    return tp->wcet != 0 ? tp->wcet : rts_task_get_est_param(tp, EST_WCET); 
 }
 
 // Set the task period
@@ -62,6 +66,10 @@ void rts_task_set_period(struct rts_task* tp, uint32_t period) {
 
 // Get the task period
 uint32_t rts_task_get_period(struct rts_task* tp) {
+    return tp->period;
+}
+
+uint32_t rts_task_get_est_period(struct rts_task* tp) {
     return tp->period != 0 ? tp->period : rts_task_get_est_param(tp, EST_PERIOD);
 }
 
@@ -72,12 +80,16 @@ void rts_task_set_deadline(struct rts_task* tp, uint32_t deadline) {
 
 // Get the relative deadline
 uint32_t rts_task_get_deadline(struct rts_task* tp) {
-    uint32_t period;
+    return tp->deadline;
+}
+
+uint32_t rts_task_get_est_deadline(struct rts_task* tp) {    
+    if(tp->deadline != 0)
+        return tp->deadline;
+    else if(tp->period != 0)
+        return tp->period;
     
-    period = tp->deadline != 0 ? tp->deadline : tp->period;
-    period = period != 0 ? period : rts_task_get_est_param(tp, EST_PERIOD);
-    
-    return period;
+    return rts_task_get_est_param(tp, EST_PERIOD);  
 }
 
 // ---
@@ -101,10 +113,6 @@ uint32_t get_priority(struct rts_task* tp) {
     return tp->priority;
 }
 
-// Get the deadline miss number
-uint32_t get_dmiss(struct rts_task* tp) {
-    return tp->dmiss;
-}
 
 int task_cmp_deadline(struct rts_task* tp1, struct rts_task* tp2) {
     if(tp1->deadline > tp2->deadline)
@@ -161,64 +169,20 @@ int task_cmp(struct rts_task* tp1, struct rts_task* tp2, enum PARAM p, int flag)
     }
 }
 
-float rts_task_calc_budget(struct rts_task* t) {
-    float period;
-    float wcet;
-    
-    if(t->period != 0)
-        period = t->period;
-    else
-        period = rts_task_get_est_param(t, EST_PERIOD);
-    
-    if(t->wcet != 0)
-        wcet = t->wcet;
-    else
-        wcet = rts_task_get_est_param(t, EST_WCET);
-    
-    return wcet / period;
-}
-
-float rts_task_calc_rem_budget(struct rts_task* t) {    
-    uint32_t wcet;
-    uint32_t period;
-    uint32_t cputimenow;
-    uint32_t cputimeact;
-    float budget_total;
-    float budget_used;
-    clockid_t clkid;
-    struct timespec ts;
-
-    clock_getcpuclockid(t->tid, &clkid);
-   
-    if(t->wcet != 0)
-        wcet = t->wcet;
-    else
-        wcet = rts_task_get_est_param(t, EST_WCET);
-    
-    if(t->period != 0)
-        period = t->period;
-    else
-        period = rts_task_get_est_param(t, EST_PERIOD);
-    
-    cputimenow = timespec_to_ms(&ts);
-    cputimeact = rts_task_get_est_param(t, EST_PERTHREADCLK);        
-            
-    budget_total = rts_task_calc_budget(t);
-    budget_used = (wcet - (cputimenow - cputimeact)) / period;
-    
-    return budget_total - budget_used;
-}
-
 int rts_task_get_est_param(struct rts_task* t, int FLAG) {
     return shatomic_get_value(&(t->est_param), FLAG);
 }
 
-float rts_task_utilization(struct rts_task* t) {
-    uint32_t period;
+void rts_task_update_util(struct rts_task* t) {
     uint32_t wcet;
+    uint32_t period;
     
-    wcet = rts_task_get_wcet(t);
-    period = rts_task_get_deadline(t);
+    wcet = rts_task_get_est_wcet(t);
+    period = rts_task_get_est_period(t);
     
-    return (wcet / (float)period);
+    t->util = (wcet / (float)period);    
+}
+
+float rts_task_get_util(struct rts_task* t) {
+    return t->util;
 }

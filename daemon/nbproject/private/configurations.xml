@@ -10,6 +10,7 @@
         <in>list_int.h</in>
         <in>list_ptr.c</in>
         <in>list_ptr.h</in>
+        <in>logger.h</in>
         <in>pipe.c</in>
         <in>pipe.h</in>
         <in>shatomic.c</in>
