@@ -1,11 +1,29 @@
+/**
+ * @file shatomic.c
+ * @author Gabriele Serra
+ * @date 10 Nov 2018
+ * @brief Contains the implementation of a pseudo-atomic shared memory segment 
+ */
+
 #include "shatomic.h"
 #include <sys/shm.h>
 #include <unistd.h>
 #include <string.h>
 #include <stdlib.h>
 
-// PRIVATE
+// ---------------------------------------------
+// PRIVATE METHODS
+// ---------------------------------------------
 
+/**
+ * @internal
+ *
+ * Generates a unique temporary filename from template, 
+ * creates and opens the file. After generate a key using
+ * i-node of the file. Finally removes the file.
+ * 
+ * @endinternal
+ */
 static int createkey() {
     key_t key;
     char template[KEY_LEN];
@@ -24,21 +42,38 @@ static int createkey() {
     return key;
 }
 
-// PUBLIC
+// ---------------------------------------------
+// PUBLIC METHODS
+// ---------------------------------------------
 
+/**
+ * @internal
+ *
+ * Initialize the shatomic structure filling with 0s
+ * 
+ * @endinternal
+ */
 void shatomic_init(struct shatomic* mem) {
     mem->id = 0;
     mem->key = 0;
     mem->value = NULL;
 }
 
+/**
+ * @internal
+ * 
+ * Generate the memory segment key and allocate
+ * a shared atomic memory segment of @nvalue number
+ * of value.
+ * 
+ * @endinternal
+ */
 int shatomic_create(struct shatomic* mem, int nvalue) {
     key_t key;
     int shmid;
     size_t size;
     
     key = createkey();
-    //printf("%d - CHIAVE\n", key);
 
     if(key < 0)
         return -1;
@@ -55,11 +90,26 @@ int shatomic_create(struct shatomic* mem, int nvalue) {
     return 0;
 }
 
+/**
+ * @internal Read and return the key of an existent shared memory segment
+ * 
+ * Read and return the key of an existent shared memory segment.
+ * 
+ * @endinternal
+ */
 key_t shatomic_getkey(struct shatomic* mem) {
     return mem->key;
 }
 
-int shatomic_use(struct shatomic* mem, key_t key) {
+/**
+ * @internal Get an existent memory segment
+ * 
+ * Get an existent memory segment that have key @key
+ * and @num as number of element.
+ * 
+ * @endinternal
+ */
+int shatomic_use(struct shatomic* mem, key_t key, int num) {
     int shmid;
     
     shmid = shmget(key, sizeof(atomic_t), PRIVILEGES);
@@ -69,9 +119,19 @@ int shatomic_use(struct shatomic* mem, key_t key) {
     
     mem->key = key;
     mem->id = shmid;
+    mem->nvalue = num;
     return 0;
 }
 
+/**
+ * @internals
+ * 
+ * Attaches to a previous created shared memory segment. Memory
+ * segment must be previous created with shatomic_create(...) or
+ * get with shatomic_use(...)
+ * 
+ * @endinternal
+ */
 int shatomic_attach(struct shatomic* mem) {
     atomic_t* value;
     
@@ -84,6 +144,14 @@ int shatomic_attach(struct shatomic* mem) {
     return 0;
 }
 
+/**
+ * @internals
+ * 
+ * Removes a shared memory segment and deallocate
+ * memory to free space.
+ * 
+ * @endinternals
+ */
 int shatomic_destroy(struct shatomic* mem) {
     return shmctl(mem->id, IPC_RMID, NULL);
 }
@@ -100,6 +168,5 @@ void shatomic_put_value(struct shatomic* mem, int index, int value) {
 }
 
 int shatomic_get_value(struct shatomic* mem, int index) {
-    
     return atomic_read(mem->value+(index * sizeof(atomic_t)));
 }

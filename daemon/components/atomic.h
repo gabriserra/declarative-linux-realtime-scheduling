@@ -1,3 +1,17 @@
+/**
+ * @file atomic.h
+ * @author Gabriele Serra
+ * @date 21 Nov 2018
+ * @brief Defines a pseudo-atomic type on x64 architectures 
+ *
+ * This file contains the definition of a pseudo-atomic type
+ * on x64 architectures. The atomicity is realized with the 
+ * volatile keyword. It need the version of GCC greater than 4
+ * because it contains some inline methods to work with the atomic
+ * type. Note that atomicity on CPU that are not Intel is guaranteed
+ * only for the LS 24 bits.
+ * Read more: https://gcc.gnu.org/onlinedocs/gcc-4.1.0/gcc/Atomic-Builtins.html
+ */
 
 #ifndef _ATOMIC_H
 #define _ATOMIC_H
@@ -10,67 +24,89 @@
 #endif
 
 /**
- * Atomic type.
+ * @brief Atomic type definition
+ * 
  */
 typedef struct {
     volatile uint64_t counter;
 } atomic_t;
 
+/**
+ * @brief Initialize an atomic variable
+ * 
+ * Initialize an atomic variable with
+ * the content passed @i
+ * 
+ * @param i value that will be assigned to variable
+ */
 #define ATOMIC_INIT(i)  { (i) }
 
 /**
- * Read atomic variable
+ * @brief Read atomic variable
+ * 
+ * Atomically reads the the value of @v
+ * 
  * @param v pointer of type atomic_t
- *
- * Atomically reads the value of @v.
  */
 #define atomic_read(v) ((v)->counter)
 
 /**
- * Set atomic variable
+ * @brief Set atomic variable
+ * 
+ * Copy the value @i into the variable @v
+ * 
  * @param v pointer of type atomic_t
  * @param i required value
  */
 #define atomic_set(v,i) (((v)->counter) = (i))
 
 /**
- * Add to the atomic variable
+ * @brief Add to the atomic variable
+ * 
+ * Sum the current value of @v with
+ * the value of @i in atomic way
+ * 
  * @param i integer value to add
  * @param v pointer of type atomic_t
  */
-static inline void atomic_add(int i, atomic_t *v) {
+static inline void atomic_add(uint64_t i, atomic_t *v) {
 	(void)__sync_add_and_fetch(&v->counter, i);
 }
 
 /**
- * Subtract the atomic variable
+ * @brief Subtract the atomic variable
+ * 
+ * Subtract the current value of @v
+ * with the value of @i in atomic way
+ * 
  * @param i integer value to subtract
  * @param v pointer of type atomic_t
- *
- * Atomically subtracts @i from @v.
  */
-static inline void atomic_sub(int i, atomic_t *v) {
+static inline void atomic_sub(uint64_t i, atomic_t *v) {
 	(void)__sync_sub_and_fetch(&v->counter, i);
 }
 
 /**
- * Subtract value from variable and test result
- * @param i integer value to subtract
- * @param v pointer of type atomic_t
- *
+ * @brief Subtract value from variable and test result
+ * 
  * Atomically subtracts @i from @v and returns
  * true if the result is zero, or false for all
  * other cases.
+ * 
+ * @param i integer value to subtract
+ * @param v pointer of type atomic_t
+ * @return 1 if the result is 0, 0 otherwise
  */
-static inline int atomic_sub_and_test(int i, atomic_t *v) {
+static inline int atomic_sub_and_test(uint64_t i, atomic_t *v) {
 	return !(__sync_sub_and_fetch(&v->counter, i));
 }
 
 /**
- * Increment atomic variable
- * @param v pointer of type atomic_t
- *
+ * @brief Increment atomic variable
+ * 
  * Atomically increments @v by 1.
+ * 
+ * @param v pointer of type atomic_t
  */
 static inline void atomic_inc(atomic_t *v) {
 	(void)__sync_fetch_and_add(&v->counter, 1);
@@ -78,10 +114,10 @@ static inline void atomic_inc(atomic_t *v) {
 
 /**
  * @brief decrement atomic variable
- * @param v: pointer of type atomic_t
  *
- * Atomically decrements @v by 1.  Note that the guaranteed
- * useful range of an atomic_t is only 24 bits.
+ * Atomically decrements @v by 1.
+ * 
+ * @param v: pointer of type atomic_t
  */
 static inline void atomic_dec(atomic_t *v) {
 	(void)__sync_fetch_and_sub(&v->counter, 1);
@@ -89,11 +125,14 @@ static inline void atomic_dec(atomic_t *v) {
 
 /**
  * @brief Decrement and test
- * @param v pointer of type atomic_t
  *
  * Atomically decrements @v by 1 and
- * returns true if the result is 0, or false for all other
- * cases.
+ * returns true if the result is 0, 
+ * or false for all other cases.
+ * 
+ * @param v pointer of type atomic_t
+ * @return 1 if the result is 0, 0 otherwise
+ * 
  */
 static inline int atomic_dec_and_test(atomic_t *v) {
 	return !(__sync_sub_and_fetch(&v->counter, 1));
@@ -101,27 +140,16 @@ static inline int atomic_dec_and_test(atomic_t *v) {
 
 /**
  * @brief Increment and test
- * @param v pointer of type atomic_t
  *
  * Atomically increments @v by 1
- * and returns true if the result is zero, or false for all
- * other cases.
+ * and returns true if the result is zero, 
+ * or false for all other cases.
+ * 
+ * @param v pointer of type atomic_t
+ * @return 1 if the result is 0, 0 otherwise
  */
 static inline int atomic_inc_and_test(atomic_t *v) {
 	return !(__sync_add_and_fetch(&v->counter, 1));
-}
-
-/**
- * @brief add and test if negative
- * @param v pointer of type atomic_t
- * @param i integer value to add
- *
- * Atomically adds @i to @v and returns true
- * if the result is negative, or false when
- * result is greater than or equal to zero.
- */
-static inline int atomic_add_negative(int i, atomic_t *v) {
-	return (__sync_add_and_fetch(&v->counter, i) < 0);
 }
 
 #endif

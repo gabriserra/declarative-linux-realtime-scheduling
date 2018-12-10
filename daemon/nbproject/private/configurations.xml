@@ -4,15 +4,11 @@
     <df root="." name="0">
       <df name="components">
         <in>atomic.h</in>
-        <in>fifo.c</in>
-        <in>fifo.h</in>
         <in>list_int.c</in>
         <in>list_int.h</in>
         <in>list_ptr.c</in>
         <in>list_ptr.h</in>
         <in>logger.h</in>
-        <in>pipe.c</in>
-        <in>pipe.h</in>
         <in>shatomic.c</in>
         <in>shatomic.h</in>
         <in>usocket.c</in>
@@ -69,8 +65,6 @@
         <gdb_interceptlist>
           <gdbinterceptoptions gdb_all="false" gdb_unhandled="true" gdb_unexpected="true"/>
         </gdb_interceptlist>
-        <gdb_signals>
-        </gdb_signals>
         <gdb_options>
           <DebugOptions>
           </DebugOptions>

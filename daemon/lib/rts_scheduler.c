@@ -11,7 +11,7 @@ static int rts_scheduler_mem_attach(struct shatomic* mem) {
    
     shatomic_init(mem);
             
-    if(shatomic_use(mem, key) < 0)
+    if(shatomic_use(mem, key, mem->nvalue) < 0)
         return -1;
     
     if(shatomic_attach(mem) < 0)

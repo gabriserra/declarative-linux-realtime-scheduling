@@ -31,7 +31,7 @@ int usocket_bind(struct usocket* us, char* filepath) {
     struct sockaddr_un usock_sockaddr;
 
     memset(&usock_sockaddr, 0, sizeof(struct sockaddr_un));
-	usock_sockaddr.sun_family = AF_UNIX;
+    usock_sockaddr.sun_family = AF_UNIX;
     strcpy(usock_sockaddr.sun_path, filepath);
     unlink(filepath);
 
